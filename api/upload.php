@@ -1,4 +1,7 @@
 <?php
+setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
+
+header('Content-Type: application/json');
 /**
  * File Upload API with Chunked Upload Support
  * FRAMES Platform

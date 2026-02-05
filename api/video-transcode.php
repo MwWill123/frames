@@ -1,5 +1,8 @@
 #!/usr/bin/env php
 <?php
+setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
+
+header('Content-Type: application/json');
 /**
  * Video Transcoding Worker
  * FRAMES Platform

@@ -1,4 +1,7 @@
 <?php
+setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
+
+header('Content-Type: application/json');
 /**
  * Authentication System Simplificado (sem JWT - para testes)
  * FRAMES Platform
@@ -157,5 +160,15 @@ if ($action === 'register') {
     echo json_encode($result);
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
+}
+function setCorsHeaders() {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
 }
 ?>

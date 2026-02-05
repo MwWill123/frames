@@ -1,4 +1,7 @@
 <?php
+setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
+
+header('Content-Type: application/json');
 /**
  * Editors API
  * FRAMES - Video Editor Platform
