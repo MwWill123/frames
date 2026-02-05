@@ -2,6 +2,21 @@
 setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
 
 header('Content-Type: application/json');
+// Handling global para erros (sempre JSON)
+set_error_handler(function ($severity, $message, $file, $line) {
+    if (error_reporting() & $severity) {
+        sendJSON(['success' => false, 'message' => "PHP Error: $message in $file on line $line"], 500);
+    }
+});
+set_exception_handler(function ($exception) {
+    sendJSON(['success' => false, 'message' => 'Exception: ' . $exception->getMessage()], 500);
+});
+register_shutdown_function(function () {
+    $error = error_get_last();
+    if ($error && $error['type'] === E_ERROR) {
+        sendJSON(['success' => false, 'message' => 'Fatal Error: ' . $error['message']], 500);
+    }
+});
 /**
  * Projects API
  * FRAMES Platform

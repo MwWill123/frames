@@ -69,8 +69,8 @@ async function loadDashboardData() {
         }
         
     } catch (error) {
-        console.error('Error loading dashboard:', error);
-        showToast('Erro ao carregar dados', 'error');
+    console.error('Error loading dashboard data:', error);
+    showToast('Sem conexão ou dados indisponíveis no momento. Tente recarregar.', 'error');
     }
 }
 
