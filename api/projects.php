@@ -1,9 +1,9 @@
 <?php
-// Global error handling (sempre retorna JSON válido, mesmo em fatal)
+// Global handling para sempre retornar JSON válido (mesmo em erro fatal)
 set_error_handler(function ($severity, $message, $file, $line) {
     if (error_reporting() & $severity) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file on line $line"]);
+        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file:$line"]);
         exit;
     }
 });
@@ -25,11 +25,6 @@ setCorsHeaders();
 
 header('Content-Type: application/json');
 
-/**
- * Projects API
- * FRAMES Platform
- */
-
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/auth.php';
 
@@ -37,14 +32,14 @@ $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? $_GET['action'] ?? null;
 
-// Auth
+// Auth check (só uma vez)
 $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
 $auth = new Auth(getDatabase());
 $authResult = $auth->verifyToken($token);
 
 if (!$authResult['success']) {
     http_response_code(401);
-    echo json_encode(['error' => 'Unauthorized']);
+    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
     exit;
 }
 
@@ -52,32 +47,11 @@ $userId = $authResult['data']->user_id;
 $userRole = $authResult['data']->role;
 
 // Route
-switch ($method) {
-    case 'GET':
-        handleGetRequest($userId, $userRole);
-        break;
-    case 'POST':
-        handlePostRequest($userId, $userRole, $input);
-        break;
-    case 'PUT':
-        handlePutRequest($userId, $userRole, $input);
-        break;
-    case 'DELETE':
-        handleDeleteRequest($userId, $userRole, $input);
-        break;
-    default:
-        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
-        exit;
-}
-
-/**
- * GET - Fetch projects
- */
-function handleGetRequest($userId, $userRole) {
+if ($method === 'GET') {
     $db = getDatabase();
 
-    // STATS ENDPOINT
-    if (isset($_GET['action']) && $_GET['action'] === 'stats') {
+    // STATS ENDPOINT (prioridade)
+    if ($action === 'stats') {
         try {
             $stmt = $db->prepare("
                 SELECT 
@@ -86,9 +60,9 @@ function handleGetRequest($userId, $userRole) {
                     COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as completed_projects,
                     COALESCE(SUM(budget), 0) as total_invested
                 FROM projects 
-                WHERE client_id = :userId
+                WHERE client_id = ?
             ");
-            $stmt->execute([':userId' => $userId]);
+            $stmt->execute([$userId]);
             $stats = $stmt->fetch(PDO::FETCH_ASSOC);
 
             echo json_encode([
