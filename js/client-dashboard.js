@@ -1,4 +1,4 @@
-// ==================== CLIENT DASHBOARD JS ====================
+// ==================== CLIENT DASHBOARD JS - FIXED ====================
 
 const API_BASE = 'https://frames.alwaysdata.net/api';
 let currentStep = 1;
@@ -22,14 +22,12 @@ function checkAuth() {
         return;
     }
     
-    // Set user info
-    document.getElementById('userName').textContent = userData.profile?.display_name || 'Cliente';
+    document.getElementById('userName').textContent = userData.display_name || userData.email || 'Cliente';
 }
 
 function logout() {
-    localStorage.removeItem('auth_token');
-    sessionStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
+    localStorage.clear();
+    sessionStorage.clear();
     window.location.href = '/login.html';
 }
 
@@ -46,31 +44,35 @@ async function loadDashboardData() {
         
         if (stats.success) {
             updateStats(stats.data);
+        } else {
+            console.error('Stats error:', stats.message);
+            // Set zeros if error
+            updateStats({ active: 0, completed: 0, spent: 0, editors: 0 });
         }
         
         // Load recent projects
-        const projectsResponse = await fetch(`${API_BASE}/projects.php?limit=5`, {
+        const projectsResponse = await fetch(`${API_BASE}/projects.php`, {
             headers: { 'Authorization': `Bearer ${token}` }
         });
         const projects = await projectsResponse.json();
         
         if (projects.success) {
-            displayRecentProjects(projects.data);
+            displayRecentProjects(projects.data || []);
         }
         
-        // Load recommended editors
-        const editorsResponse = await fetch(`${API_BASE}/editors.php?featured=true&limit=4`, {
-            headers: { 'Authorization': `Bearer ${token}` }
-        });
+        // Load editors
+        const editorsResponse = await fetch(`${API_BASE}/editors.php?featured=true&limit=4`);
         const editors = await editorsResponse.json();
         
         if (editors.success) {
-            displayRecommendedEditors(editors.data);
+            displayRecommendedEditors(editors.data || []);
         }
         
     } catch (error) {
-    console.error('Error loading dashboard data:', error);
-    showToast('Sem conexão ou dados indisponíveis no momento. Tente recarregar.', 'error');
+        console.error('Error loading dashboard:', error);
+        showToast('Erro ao carregar dados do dashboard', 'error');
+        // Set default values
+        updateStats({ active: 0, completed: 0, spent: 0, editors: 0 });
     }
 }
 
@@ -84,7 +86,7 @@ function updateStats(stats) {
 function displayRecentProjects(projects) {
     const container = document.getElementById('recentProjects');
     
-    if (projects.length === 0) {
+    if (!projects || projects.length === 0) {
         container.innerHTML = `
             <div class="empty-state">
                 <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
@@ -101,24 +103,16 @@ function displayRecentProjects(projects) {
         return;
     }
     
-    container.innerHTML = projects.map(project => `
-        <div class="project-card" data-id="${project.id}">
-            <div class="project-header">
-                <h4>${project.title}</h4>
-                <span class="status-badge ${project.status.toLowerCase()}">${getStatusLabel(project.status)}</span>
+    container.innerHTML = projects.slice(0, 5).map(project => `
+        <div class="project-card" style="background: var(--dark-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; margin-bottom: 1rem;">
+            <div class="project-header" style="display: flex; justify-content: space-between; margin-bottom: 0.5rem;">
+                <h4 style="margin: 0;">${project.title}</h4>
+                <span class="status-badge" style="background: rgba(0, 255, 240, 0.1); color: var(--primary-cyan); padding: 0.3rem 0.8rem; border-radius: 6px; font-size: 0.75rem;">${project.status}</span>
             </div>
-            <p class="project-desc">${truncate(project.description, 100)}</p>
-            <div class="project-meta">
-                <span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                    <circle cx="8" cy="8" r="6"/>
-                    <path d="M8 4v4l2 2"/>
-                </svg> ${formatDate(project.deadline)}</span>
-                <span><svg width="16" height="16" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M8 2v12M4 6L8 2l4 4M12 10L8 14l-4-4"/>
-                </svg> R$ ${formatMoney(project.budget_max)}</span>
-            </div>
-            <div class="project-actions">
-                <button class="btn-secondary" onclick="viewProject('${project.id}')">Ver Detalhes</button>
+            <p style="color: var(--text-secondary); font-size: 0.9rem; margin: 0.5rem 0;">${truncate(project.description, 100)}</p>
+            <div class="project-meta" style="display: flex; gap: 1rem; font-size: 0.85rem; color: var(--text-secondary); margin-top: 1rem;">
+                <span>📅 ${formatDate(project.deadline)}</span>
+                <span>💰 R$ ${formatMoney(project.budget_max || 0)}</span>
             </div>
         </div>
     `).join('');
@@ -127,22 +121,21 @@ function displayRecentProjects(projects) {
 function displayRecommendedEditors(editors) {
     const container = document.getElementById('recommendedEditors');
     
+    if (!editors || editors.length === 0) {
+        container.innerHTML = '<p style="color: var(--text-secondary);">Nenhum editor disponível no momento</p>';
+        return;
+    }
+    
     container.innerHTML = editors.map(editor => `
-        <div class="editor-card" data-id="${editor.id}">
-            <div class="editor-avatar">
-                <img src="${editor.avatar_url || 'https://via.placeholder.com/80'}" alt="${editor.display_name}">
-                ${editor.is_verified ? '<span class="verified-badge">✓</span>' : ''}
+        <div class="editor-card" style="background: var(--dark-card); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 1.5rem; text-align: center;">
+            <img src="${editor.image || 'https://via.placeholder.com/80'}" alt="${editor.name}" style="width: 80px; height: 80px; border-radius: 50%; margin-bottom: 1rem; border: 2px solid var(--primary-cyan);">
+            <h4 style="margin: 0.5rem 0;">${editor.name}</h4>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">${editor.title || 'Editor Profissional'}</p>
+            <div style="margin: 1rem 0;">
+                <span style="color: var(--primary-cyan);">${'★'.repeat(Math.floor(editor.rating || 4))}${'☆'.repeat(5 - Math.floor(editor.rating || 4))}</span>
+                <span style="font-size: 0.8rem; color: var(--text-secondary);"> ${editor.rating || 4}.0 (${editor.reviews || 0})</span>
             </div>
-            <h4>${editor.display_name}</h4>
-            <p class="editor-tagline">${editor.tagline || ''}</p>
-            <div class="editor-rating">
-                <span class="stars">${'★'.repeat(Math.floor(editor.average_rating))}${'☆'.repeat(5 - Math.floor(editor.average_rating))}</span>
-                <span>${editor.average_rating.toFixed(1)} (${editor.total_reviews} reviews)</span>
-            </div>
-            <div class="editor-skills">
-                ${editor.specialties.slice(0, 3).map(s => `<span class="skill-tag">${s}</span>`).join('')}
-            </div>
-            <button class="btn-primary" onclick="viewEditor('${editor.id}')">Ver Perfil</button>
+            <button class="btn-primary" style="width: 100%; padding: 0.7rem; font-size: 0.9rem;">Ver Perfil</button>
         </div>
     `).join('');
 }
@@ -166,6 +159,8 @@ function initializeWizard() {
     const prevBtn = document.getElementById('prevStepBtn');
     const submitBtn = document.getElementById('submitProjectBtn');
     const form = document.getElementById('newProjectForm');
+    
+    if (!nextBtn || !prevBtn || !submitBtn || !form) return;
     
     nextBtn.addEventListener('click', () => {
         if (validateStep(currentStep)) {
@@ -194,7 +189,6 @@ function initializeWizard() {
 }
 
 function showWizardStep(step) {
-    // Update step indicators
     document.querySelectorAll('.wizard-step').forEach((el, index) => {
         el.classList.remove('active', 'completed');
         if (index + 1 === step) {
@@ -204,7 +198,6 @@ function showWizardStep(step) {
         }
     });
     
-    // Update content
     document.querySelectorAll('.wizard-content').forEach((el, index) => {
         el.classList.remove('active');
         if (index + 1 === step) {
@@ -212,7 +205,6 @@ function showWizardStep(step) {
         }
     });
     
-    // Update buttons
     const prevBtn = document.getElementById('prevStepBtn');
     const nextBtn = document.getElementById('nextStepBtn');
     const submitBtn = document.getElementById('submitProjectBtn');
@@ -224,20 +216,22 @@ function showWizardStep(step) {
 
 function validateStep(step) {
     const currentContent = document.querySelector(`.wizard-content[data-step="${step}"]`);
+    if (!currentContent) return false;
+    
     const inputs = currentContent.querySelectorAll('input[required], textarea[required], select[required]');
     
     let valid = true;
     inputs.forEach(input => {
-        if (!input.value && input.type !== 'radio') {
-            input.style.borderColor = 'var(--error)';
-            valid = false;
-        } else if (input.type === 'radio') {
+        if (input.type === 'radio') {
             const name = input.name;
             const checked = currentContent.querySelector(`input[name="${name}"]:checked`);
             if (!checked) {
                 valid = false;
                 showToast('Por favor, selecione uma opção', 'warning');
             }
+        } else if (!input.value) {
+            input.style.borderColor = 'var(--error)';
+            valid = false;
         } else {
             input.style.borderColor = '';
         }
@@ -247,7 +241,6 @@ function validateStep(step) {
 }
 
 function saveStepData(step) {
-    const currentContent = document.querySelector(`.wizard-content[data-step="${step}"]`);
     const formData = new FormData(document.getElementById('newProjectForm'));
     
     formData.forEach((value, key) => {
@@ -262,11 +255,26 @@ function saveStepData(step) {
 }
 
 async function submitProject() {
-    const loadingOverlay = document.getElementById('loadingOverlay');
-    if (loadingOverlay) loadingOverlay.classList.add('active');
+    showLoading(true);
     
     try {
         const token = getAuthToken();
+        
+        const payload = {
+            action: 'create',
+            title: projectData.title,
+            description: projectData.description,
+            specialty: projectData.specialty,
+            deadline: projectData.deadline,
+            budget_min: projectData.budget_min || 500,
+            budget_max: projectData.budget_max || 1000,
+            budget_type: projectData.budget_type || 'fixed',
+            aspect_ratio: projectData.aspect_ratio || '16:9',
+            duration_min: projectData.duration_min || null,
+            duration_max: projectData.duration_max || null
+        };
+        
+        console.log('Sending project:', payload);
         
         const response = await fetch(`${API_BASE}/projects.php`, {
             method: 'POST',
@@ -274,23 +282,20 @@ async function submitProject() {
                 'Authorization': `Bearer ${token}`,
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({
-                action: 'create',
-                ...projectData
-            })
+            body: JSON.stringify(payload)
         });
         
         const result = await response.json();
+        console.log('Response:', result);
         
         if (result.success) {
             showToast('Projeto criado com sucesso!', 'success');
             closeNewProjectModal();
-            loadDashboardData(); // Reload dashboard
             
-            // Redirect to project page
+            // Reload dashboard
             setTimeout(() => {
-                window.location.href = `/client/project.html?id=${result.project_id}`;
-            }, 1500);
+                loadDashboardData();
+            }, 1000);
         } else {
             showToast(result.message || 'Erro ao criar projeto', 'error');
         }
@@ -298,27 +303,33 @@ async function submitProject() {
         console.error('Error submitting project:', error);
         showToast('Erro ao conectar com o servidor', 'error');
     } finally {
-        if (loadingOverlay) loadingOverlay.classList.remove('active');
+        showLoading(false);
     }
 }
 
 // ==================== EVENT LISTENERS ====================
 function initializeEventListeners() {
     // Logout
-    document.getElementById('logoutBtn').addEventListener('click', logout);
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) logoutBtn.addEventListener('click', logout);
     
-    // New project button
-    document.getElementById('newProjectBtn').addEventListener('click', openNewProjectModal);
+    // New project
+    const newProjectBtn = document.getElementById('newProjectBtn');
+    if (newProjectBtn) newProjectBtn.addEventListener('click', openNewProjectModal);
     
     // Close modal
-    document.getElementById('closeModal').addEventListener('click', closeNewProjectModal);
+    const closeModalBtn = document.getElementById('closeModal');
+    if (closeModalBtn) closeModalBtn.addEventListener('click', closeNewProjectModal);
     
-    // Close modal on overlay click
-    document.getElementById('newProjectModal').addEventListener('click', (e) => {
-        if (e.target.id === 'newProjectModal') {
-            closeNewProjectModal();
-        }
-    });
+    // Close on overlay click
+    const modal = document.getElementById('newProjectModal');
+    if (modal) {
+        modal.addEventListener('click', (e) => {
+            if (e.target.id === 'newProjectModal') {
+                closeNewProjectModal();
+            }
+        });
+    }
     
     // Budget suggestions
     document.querySelectorAll('.budget-suggestion').forEach(btn => {
@@ -329,150 +340,6 @@ function initializeEventListeners() {
             document.querySelector('input[name="budget_max"]').value = max;
         });
     });
-    
-    // Add reference URL
-    const addUrlBtn = document.querySelector('.btn-add-url');
-    if (addUrlBtn) {
-        addUrlBtn.addEventListener('click', () => {
-            const container = document.getElementById('referenceUrls');
-            const newInput = document.createElement('div');
-            newInput.className = 'url-input-group';
-            newInput.innerHTML = `
-                <input type="url" name="reference_url[]" placeholder="https://youtube.com/watch?v=...">
-                <button type="button" class="btn-icon btn-remove-url">−</button>
-            `;
-            container.appendChild(newInput);
-            
-            newInput.querySelector('.btn-remove-url').addEventListener('click', () => {
-                newInput.remove();
-            });
-        });
-    }
-    
-    // File upload
-    const fileUploadArea = document.getElementById('fileUploadArea');
-    const fileInput = document.getElementById('fileInput');
-    
-    if (fileUploadArea && fileInput) {
-        fileUploadArea.addEventListener('click', () => fileInput.click());
-        
-        fileUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            fileUploadArea.style.borderColor = 'var(--primary-cyan)';
-        });
-        
-        fileUploadArea.addEventListener('dragleave', () => {
-            fileUploadArea.style.borderColor = '';
-        });
-        
-        fileUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            fileUploadArea.style.borderColor = '';
-            handleFiles(e.dataTransfer.files);
-        });
-        
-        fileInput.addEventListener('change', (e) => {
-            handleFiles(e.target.files);
-        });
-    }
-    
-    // Navigation
-    document.querySelectorAll('.nav-item').forEach(item => {
-        item.addEventListener('click', (e) => {
-            e.preventDefault();
-            const view = item.getAttribute('href').substring(1);
-            switchView(view);
-            
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            item.classList.add('active');
-        });
-    });
-}
-
-function handleFiles(files) {
-    const uploadedFilesList = document.getElementById('uploadedFiles');
-    
-    Array.from(files).forEach(file => {
-        const fileItem = document.createElement('div');
-        fileItem.className = 'file-item';
-        fileItem.innerHTML = `
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                <path d="M13 2H6a2 2 0 00-2 2v12a2 2 0 002 2h8a2 2 0 002-2V7l-5-5z"/>
-                <path d="M13 2v5h5"/>
-            </svg>
-            <span class="file-name">${file.name}</span>
-            <span class="file-size">${formatFileSize(file.size)}</span>
-            <button type="button" class="btn-remove-file">×</button>
-        `;
-        
-        uploadedFilesList.appendChild(fileItem);
-        
-        fileItem.querySelector('.btn-remove-file').addEventListener('click', () => {
-            fileItem.remove();
-        });
-        
-        // Upload file
-        uploadFile(file);
-    });
-}
-
-async function uploadFile(file) {
-    const token = getAuthToken();
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'REFERENCE');
-    
-    try {
-        const response = await fetch(`${API_BASE}/upload.php`, {
-            method: 'POST',
-            headers: {
-                'Authorization': `Bearer ${token}`
-            },
-            body: formData
-        });
-        
-        const result = await response.json();
-        
-        if (result.success) {
-            // Store file URL for later use
-            if (!projectData.uploaded_files) projectData.uploaded_files = [];
-            projectData.uploaded_files.push(result.file_url);
-        }
-    } catch (error) {
-        console.error('Upload error:', error);
-        showToast('Erro ao fazer upload do arquivo', 'error');
-    }
-}
-
-// ==================== VIEW SWITCHING ====================
-function switchView(view) {
-    document.querySelectorAll('.dashboard-content').forEach(content => {
-        content.classList.add('hidden');
-    });
-    
-    const viewMap = {
-        'dashboard': 'dashboardView',
-        'projects': 'projectsView',
-        'search': 'searchView',
-        'messages': 'messagesView',
-        'payments': 'paymentsView'
-    };
-    
-    const viewElement = document.getElementById(viewMap[view]);
-    if (viewElement) {
-        viewElement.classList.remove('hidden');
-    }
-    
-    // Update page title
-    const titles = {
-        'dashboard': 'Dashboard',
-        'projects': 'Meus Projetos',
-        'search': 'Buscar Editores',
-        'messages': 'Mensagens',
-        'payments': 'Pagamentos'
-    };
-    
-    document.querySelector('.page-title').textContent = titles[view] || 'Dashboard';
 }
 
 // ==================== UTILITY FUNCTIONS ====================
@@ -480,8 +347,22 @@ function getAuthToken() {
     return localStorage.getItem('auth_token') || sessionStorage.getItem('auth_token');
 }
 
+function showLoading(show) {
+    const overlay = document.getElementById('loadingOverlay') || createLoadingOverlay();
+    overlay.classList.toggle('active', show);
+}
+
+function createLoadingOverlay() {
+    const overlay = document.createElement('div');
+    overlay.id = 'loadingOverlay';
+    overlay.className = 'loading-overlay';
+    overlay.innerHTML = '<div class="spinner"></div><p>Carregando...</p>';
+    overlay.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(10,10,10,0.9);display:flex;align-items:center;justify-content:center;flex-direction:column;z-index:9999;';
+    document.body.appendChild(overlay);
+    return overlay;
+}
+
 function showToast(message, type = 'info') {
-    // Reuse toast from login or create inline
     const toast = document.getElementById('toast') || createToast();
     toast.textContent = message;
     toast.className = `toast ${type} show`;
@@ -495,7 +376,13 @@ function createToast() {
     const toast = document.createElement('div');
     toast.id = 'toast';
     toast.className = 'toast';
+    toast.style.cssText = 'position:fixed;top:2rem;right:2rem;background:var(--dark-card);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:1rem 1.5rem;min-width:300px;transform:translateX(400px);transition:transform 0.3s;z-index:10000;';
     document.body.appendChild(toast);
+    
+    const style = document.createElement('style');
+    style.textContent = '.toast.show{transform:translateX(0);}.toast.success{border-left:4px solid var(--success);}.toast.error{border-left:4px solid var(--error);}.toast.warning{border-left:4px solid var(--warning);}';
+    document.head.appendChild(style);
+    
     return toast;
 }
 
@@ -506,42 +393,15 @@ function formatMoney(value) {
     }).format(value);
 }
 
-function formatFileSize(bytes) {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
-}
-
 function formatDate(dateString) {
+    if (!dateString) return 'N/A';
     const date = new Date(dateString);
     return date.toLocaleDateString('pt-BR');
 }
 
 function truncate(str, length) {
+    if (!str) return '';
     return str.length > length ? str.substring(0, length) + '...' : str;
-}
-
-function getStatusLabel(status) {
-    const labels = {
-        'OPEN': 'Aberto',
-        'IN_PROGRESS': 'Em Andamento',
-        'IN_REVIEW': 'Em Revisão',
-        'REVISION_REQUESTED': 'Revisão Solicitada',
-        'COMPLETED': 'Concluído',
-        'CANCELLED': 'Cancelado',
-        'DISPUTED': 'Em Disputa'
-    };
-    return labels[status] || status;
-}
-
-function viewProject(projectId) {
-    window.location.href = `/client/project.html?id=${projectId}`;
-}
-
-function viewEditor(editorId) {
-    window.location.href = `/editor/profile.html?id=${editorId}`;
 }
 
 console.log('%c🎬 FRAMES Client Dashboard', 'font-size: 18px; color: #00FFF0; font-weight: bold;');

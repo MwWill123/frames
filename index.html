@@ -13,9 +13,20 @@
     <!-- Background Gallery -->
     <div class="background-gallery" id="bgGallery"></div>
 
-    <!-- Header -->
-    <header class="header">
-        <!-- Header removed - navigation moved to footer -->
+    <!-- Modern Header with CTA -->
+    <header class="modern-header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo-brand">FRAMES</div>
+                <nav class="header-nav">
+                    <a href="#como-funciona">Como Funciona</a>
+                    <a href="#editores">Editores</a>
+                    <a href="#precos">Preços</a>
+                    <a href="login.html" class="btn-login">Entrar</a>
+                    <a href="login.html?action=register" class="btn-register">Criar Conta</a>
+                </nav>
+            </div>
+        </div>
     </header>
 
     <!-- Hero Section -->
@@ -23,18 +34,64 @@
         <div class="container">
             <h1 class="hero-title">FRAMES</h1>
             <p class="hero-subtitle">UNLOCK YOUR VISUAL STORY</p>
+            <p class="hero-description">Conecte-se com editores profissionais de vídeo.<br>Transforme suas ideias em histórias visuais impactantes.</p>
             
-            <!-- Search Bar -->
-            <div class="search-container">
-                <input type="text" id="searchInput" placeholder="QUAL O SUR FORMATO?" class="search-input">
-                <button class="search-btn" id="searchBtn">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                        <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-                    </svg>
-                </button>
+            <div class="hero-cta">
+                <a href="login.html?action=register" class="btn-hero-primary">Começar Agora</a>
+                <a href="#como-funciona" class="btn-hero-secondary">Saiba Mais</a>
             </div>
 
-            <!-- Format Categories -->
+            <!-- Quick Stats -->
+            <div class="quick-stats">
+                <div class="stat-item">
+                    <span class="stat-number">10K+</span>
+                    <span class="stat-label">Projetos</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">500+</span>
+                    <span class="stat-label">Editores</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-number">98%</span>
+                    <span class="stat-label">Satisfação</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- How It Works Section -->
+    <section class="how-it-works" id="como-funciona">
+        <div class="container">
+            <h2 class="section-title">Como Funciona</h2>
+            <div class="steps-grid">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <h3>Crie seu Projeto</h3>
+                    <p>Descreva o que você precisa em um formulário simples</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <h3>Escolha seu Editor</h3>
+                    <p>Receba propostas de editores qualificados</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <h3>Aprove o Trabalho</h3>
+                    <p>Revise, comente e aprove com nossa sala de revisão</p>
+                </div>
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <h3>Pagamento Seguro</h3>
+                    <p>Pague apenas quando estiver 100% satisfeito</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Video Formats -->
+    <section class="video-formats">
+        <div class="container">
+            <h2 class="section-title">Formatos de Vídeo</h2>
             <div class="format-categories">
                 <div class="format-item" data-format="reels">
                     <div class="format-icon">
@@ -53,7 +110,7 @@
                             <path d="M25 20 L35 25 L25 30 Z" fill="currentColor"/>
                         </svg>
                     </div>
-                    <p>YouTube Vlog</p>
+                    <p>YouTube</p>
                 </div>
 
                 <div class="format-item" data-format="documentario">
@@ -63,7 +120,6 @@
                             <rect x="12" y="17" width="15" height="10" stroke="currentColor" stroke-width="1.5"/>
                             <line x1="30" y1="19" x2="45" y2="19" stroke="currentColor" stroke-width="1.5"/>
                             <line x1="30" y1="25" x2="45" y2="25" stroke="currentColor" stroke-width="1.5"/>
-                            <line x1="12" y1="31" x2="45" y2="31" stroke="currentColor" stroke-width="1.5"/>
                         </svg>
                     </div>
                     <p>Documentário</p>
@@ -80,118 +136,111 @@
                     <p>Comercial</p>
                 </div>
 
-                <div class="format-item active" data-format="gameplay">
+                <div class="format-item" data-format="gameplay">
                     <div class="format-icon">
                         <svg width="60" height="50" viewBox="0 0 60 50" fill="none">
                             <rect x="10" y="15" width="40" height="20" rx="3" stroke="currentColor" stroke-width="2"/>
                             <circle cx="22" cy="25" r="3" stroke="currentColor" stroke-width="2"/>
                             <line x1="36" y1="22" x2="36" y2="28" stroke="currentColor" stroke-width="2"/>
                             <line x1="33" y1="25" x2="39" y2="25" stroke="currentColor" stroke-width="2"/>
-                            <line x1="42" y1="23" x2="44" y2="23" stroke="currentColor" stroke-width="2"/>
-                            <line x1="42" y1="27" x2="44" y2="27" stroke="currentColor" stroke-width="2"/>
                         </svg>
                     </div>
                     <p>Gameplay</p>
-                    <span class="format-badge">CRIAR VÍDEOS VERTICAIS</span>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Sidebar Filters -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <h3>FILTROS</h3>
-            <button class="close-sidebar" id="closeSidebar">&times;</button>
-        </div>
-        
-        <div class="filter-section">
-            <div class="filter-item">
-                <div class="filter-avatar">
-                    <img src="https://via.placeholder.com/40" alt="User">
-                    <span>SOFTWARE</span>
-                </div>
-            </div>
-
-            <div class="filter-item">
-                <label class="filter-label">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 2L3 7v6c0 4.42 3.58 8 7 8s7-3.58 7-8V7l-7-5z"/>
-                    </svg>
-                    <span>PAINEL FREE</span>
-                    <input type="checkbox" class="toggle-switch" checked>
-                </label>
-            </div>
-
-            <div class="filter-item">
-                <label class="filter-label">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M3 3h14v14H3V3zm2 2v10h10V5H5z"/>
-                    </svg>
-                    <span>ESTILO</span>
-                    <input type="checkbox" class="toggle-switch">
-                </label>
-            </div>
-
-            <div class="filter-item">
-                <label class="filter-label">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M10 2L2 7v11h6v-6h4v6h6V7l-8-5z"/>
-                    </svg>
-                    <span>Final CO</span>
-                    <input type="checkbox" class="toggle-switch" checked>
-                </label>
-            </div>
-
-            <div class="filter-item">
-                <label class="filter-label">
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
-                        <path d="M3 3h14v3H3V3zm0 5h14v3H3V8zm0 5h14v3H3v-3z"/>
-                    </svg>
-                    <span>Corporate</span>
-                    <input type="checkbox" class="toggle-switch" checked>
-                </label>
-            </div>
-        </div>
-    </aside>
-
-    <!-- Editors Section -->
-    <section class="editors-section">
+    <!-- Featured Editors -->
+    <section class="editors-section" id="editores">
         <div class="container">
-            <h2 class="section-title">EDITORS EM DESTALDE</h2>
-            
+            <h2 class="section-title">Editores em Destaque</h2>
             <div class="editors-carousel" id="editorsCarousel">
-                <!-- Editor cards will be loaded dynamically -->
+                <!-- Loaded dynamically -->
             </div>
+        </div>
+    </section>
 
-            <button class="carousel-nav prev" id="prevBtn">‹</button>
-            <button class="carousel-nav next" id="nextBtn">›</button>
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <h2 class="cta-title">Pronto para começar?</h2>
+            <p class="cta-description">Junte-se a milhares de criadores que já transformaram suas ideias em realidade</p>
+            <div class="cta-buttons">
+                <a href="login.html?action=register" class="btn-hero-primary">Criar Conta Grátis</a>
+                <a href="login.html?action=register&role=EDITOR" class="btn-hero-secondary">Quero ser Editor</a>
+            </div>
         </div>
     </section>
 
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <nav class="footer-nav">
-                <a href="#sobre">SOBRE NÓS</a>
-                <a href="#como-funciona">COMO FUNCIONA</a>
-                <div class="footer-logo">FRAMES</div>
-                <a href="#funciona">COMO FUNCIONA</a>
-                <a href="#contato">CONTATO</a>
-            </nav>
+            <div class="footer-grid">
+                <div class="footer-col">
+                    <h3 class="footer-logo">FRAMES</h3>
+                    <p>Conectando criadores com editores profissionais</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Plataforma</h4>
+                    <a href="#como-funciona">Como Funciona</a>
+                    <a href="#editores">Encontrar Editores</a>
+                    <a href="login.html?action=register&role=EDITOR">Seja um Editor</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Suporte</h4>
+                    <a href="#">Central de Ajuda</a>
+                    <a href="#">Termos de Uso</a>
+                    <a href="#">Privacidade</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Contato</h4>
+                    <a href="mailto:contato@frames.com">contato@frames.com</a>
+                    <div class="social-links">
+                        <a href="#" aria-label="Instagram">📷</a>
+                        <a href="#" aria-label="Twitter">🐦</a>
+                        <a href="#" aria-label="LinkedIn">💼</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 FRAMES. Todos os direitos reservados.</p>
+            </div>
         </div>
     </footer>
 
-    <!-- Toggle Sidebar Button -->
-    <button class="toggle-sidebar-btn" id="toggleSidebar">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
-            <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2"/>
-            <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2"/>
-            <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2"/>
-        </svg>
-    </button>
-
     <script src="js/data.js"></script>
     <script src="js/main.js"></script>
+    <script>
+        // Load featured editors
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                const response = await fetch('https://frames.alwaysdata.net/api/editors.php?featured=true&limit=6');
+                const data = await response.json();
+                
+                if (data.success && data.data) {
+                    const carousel = document.getElementById('editorsCarousel');
+                    carousel.innerHTML = data.data.map(editor => `
+                        <div class="editor-card">
+                            <div class="editor-card-image">
+                                <img src="${editor.image || 'https://via.placeholder.com/300x200'}" alt="${editor.name}">
+                            </div>
+                            <div class="editor-card-content">
+                                <h4>${editor.name}</h4>
+                                <p>${editor.title || 'Editor Profissional'}</p>
+                                <div class="editor-rating">
+                                    <span>${'★'.repeat(Math.floor(editor.rating || 4))}${'☆'.repeat(5 - Math.floor(editor.rating || 4))}</span>
+                                    <span>${editor.rating || 4}.0</span>
+                                </div>
+                                <a href="login.html?action=register" class="btn-view-profile">Ver Perfil</a>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading editors:', error);
+            }
+        });
+    </script>
 </body>
 </html>

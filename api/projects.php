@@ -1,94 +1,80 @@
 <?php
-// Global handling - sempre JSON válido
+/**
+ * Projects API - FRAMES Platform
+ * Complete CRUD with proper error handling
+ */
+
+// Error handlers
 set_error_handler(function ($severity, $message, $file, $line) {
     if (error_reporting() & $severity) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file:$line"]);
+        echo json_encode(['success' => false, 'message' => "PHP Error: $message"]);
         exit;
     }
 });
+
 set_exception_handler(function ($exception) {
     http_response_code(500);
     echo json_encode(['success' => false, 'message' => 'Exception: ' . $exception->getMessage()]);
     exit;
 });
-register_shutdown_function(function () {
-    $error = error_get_last();
-    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
-        http_response_code(500);
-        echo json_encode(['success' => false, 'message' => 'Fatal Error: ' . $error['message']]);
-        exit;
-    }
-});
 
 setCorsHeaders();
-
 header('Content-Type: application/json');
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/auth.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true);
+$input = json_decode(file_get_contents('php://input'), true) ?: [];
 $action = $input['action'] ?? $_GET['action'] ?? null;
 
-// Auth manual (sem output extra)
+// Authentication
 $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
 $db = getDatabase();
 $auth = new Auth($db);
 $authResult = $auth->verifyToken($token);
 
 if (!$authResult['success']) {
-    http_response_code(401);
-    echo json_encode(['success' => false, 'message' => 'Unauthorized']);
-    exit;
+    sendJSON(['success' => false, 'message' => 'Unauthorized'], 401);
 }
 
 $userId = $authResult['data']->user_id;
 $userRole = $authResult['data']->role;
 
-// Route
-if ($method === 'GET') {
-    // STATS
-    if ($action === 'stats') {
-        try {
-            $stmt = $db->prepare("
-                SELECT 
-                    COUNT(*) as total_projects,
-                    COUNT(CASE WHEN status = 'OPEN' THEN 1 END) as active_projects,
-                    COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as completed_projects,
-                    COALESCE(SUM(budget), 0) as total_invested
-                FROM projects 
-                WHERE client_id = ?
-            ");
-            $stmt->execute([$userId]);
-            $stats = $stmt->fetch(PDO::FETCH_ASSOC);
-
-            echo json_encode([
-                'success' => true,
-                'data' => $stats ?: [
-                    'total_projects' => 0,
-                    'active_projects' => 0,
-                    'completed_projects' => 0,
-                    'total_invested' => 0
-                ]
-            ]);
-            exit;
-        } catch (Exception $e) {
-            echo json_encode(['success' => false, 'message' => 'Stats error: ' . $e->getMessage()]);
-            exit;
+// ==================== ROUTING ====================
+switch ($method) {
+    case 'GET':
+        if ($action === 'stats') {
+            getProjectStats($db, $userId, $userRole);
+        } elseif (isset($_GET['id'])) {
+            getSingleProject($db, $_GET['id'], $userId, $userRole);
+        } else {
+            listProjects($db, $userId, $userRole);
         }
-    }
-   
-    // Single project
-    if (isset($_GET['id'])) {
-        getSingleProject($db, $_GET['id'], $userId, $userRole);
-        return;
-    }
-   
-    // List projects
-    listProjects($db, $userId, $userRole);
+        break;
+        
+    case 'POST':
+        if ($action === 'create') {
+            createProject($db, $userId, $userRole, $input);
+        } else {
+            sendJSON(['success' => false, 'message' => 'Invalid action. Use action=create'], 400);
+        }
+        break;
+        
+    case 'PUT':
+        updateProject($db, $userId, $userRole, $input);
+        break;
+        
+    case 'DELETE':
+        deleteProject($db, $userId, $userRole, $input);
+        break;
+        
+    default:
+        sendJSON(['success' => false, 'message' => 'Method not allowed'], 405);
 }
+
+// ==================== FUNCTIONS ====================
 
 function getProjectStats($db, $userId, $userRole) {
     try {
@@ -96,20 +82,25 @@ function getProjectStats($db, $userId, $userRole) {
         
         $stmt = $db->prepare("
             SELECT 
-                COUNT(*) FILTER (WHERE status IN ('OPEN', 'IN_PROGRESS', 'IN_REVIEW')) as active,
-                COUNT(*) FILTER (WHERE status = 'COMPLETED') as completed,
-                COALESCE(SUM(agreed_price) FILTER (WHERE status = 'COMPLETED'), 0) as spent,
-                COUNT(DISTINCT editor_id) FILTER (WHERE editor_id IS NOT NULL) as editors
+                CAST(COUNT(CASE WHEN status IN ('OPEN', 'IN_PROGRESS', 'IN_REVIEW') THEN 1 END) AS INTEGER) as active,
+                CAST(COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) AS INTEGER) as completed,
+                CAST(COALESCE(SUM(CASE WHEN status = 'COMPLETED' THEN budget_max ELSE 0 END), 0) AS NUMERIC) as spent,
+                CAST(COUNT(DISTINCT editor_id) FILTER (WHERE editor_id IS NOT NULL) AS INTEGER) as editors
             FROM projects
-            WHERE $whereClause AND deleted_at IS NULL
+            WHERE $whereClause
         ");
         $stmt->execute([$userId]);
         $stats = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        sendJSON(['success' => true, 'data' => $stats]);
+        sendJSON(['success' => true, 'data' => $stats ?: [
+            'active' => 0,
+            'completed' => 0,
+            'spent' => 0,
+            'editors' => 0
+        ]]);
         
     } catch (Exception $e) {
-        error_log("Get stats error: " . $e->getMessage());
+        error_log("Stats error: " . $e->getMessage());
         sendJSON(['success' => false, 'message' => 'Error fetching stats'], 500);
     }
 }
@@ -117,60 +108,18 @@ function getProjectStats($db, $userId, $userRole) {
 function getSingleProject($db, $projectId, $userId, $userRole) {
     try {
         $stmt = $db->prepare("
-            SELECT 
-                p.*,
-                c.email as client_email,
-                up_c.display_name as client_name,
-                e.email as editor_email,
-                ep.display_name as editor_name,
-                ep.avatar_url as editor_avatar
-            FROM projects p
-            JOIN users c ON p.client_id = c.id
-            LEFT JOIN user_profiles up_c ON c.id = up_c.user_id
-            LEFT JOIN users e ON p.editor_id = e.id
-            LEFT JOIN editor_profiles ep ON e.id = ep.user_id
-            WHERE p.id = ?
+            SELECT p.* FROM projects p WHERE p.id = ?
         ");
         $stmt->execute([$projectId]);
         $project = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$project) {
             sendJSON(['success' => false, 'message' => 'Project not found'], 404);
-            return;
         }
         
-        // Check permission
+        // Permission check
         if ($userRole === 'CLIENT' && $project['client_id'] !== $userId) {
             sendJSON(['success' => false, 'message' => 'Access denied'], 403);
-            return;
-        }
-        
-        if ($userRole === 'EDITOR' && $project['editor_id'] !== $userId) {
-            sendJSON(['success' => false, 'message' => 'Access denied'], 403);
-            return;
-        }
-        
-        // Get project assets
-        $stmt = $db->prepare("SELECT * FROM project_assets WHERE project_id = ? ORDER BY created_at DESC");
-        $stmt->execute([$projectId]);
-        $project['assets'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
-        
-        // Get proposals if client
-        if ($userRole === 'CLIENT') {
-            $stmt = $db->prepare("
-                SELECT 
-                    prop.*,
-                    ep.display_name as editor_name,
-                    ep.avatar_url as editor_avatar,
-                    ep.average_rating,
-                    ep.total_reviews
-                FROM proposals prop
-                JOIN editor_profiles ep ON prop.editor_id = ep.user_id
-                WHERE prop.project_id = ?
-                ORDER BY prop.created_at DESC
-            ");
-            $stmt->execute([$projectId]);
-            $project['proposals'] = $stmt->fetchAll(PDO::FETCH_ASSOC);
         }
         
         sendJSON(['success' => true, 'data' => $project]);
@@ -183,59 +132,18 @@ function getSingleProject($db, $projectId, $userId, $userRole) {
 
 function listProjects($db, $userId, $userRole) {
     try {
-        $query = "
-            SELECT 
-                p.*,
-                c.email as client_email,
-                up_c.display_name as client_name,
-                e.email as editor_email,
-                ep.display_name as editor_name
-            FROM projects p
-            JOIN users c ON p.client_id = c.id
-            LEFT JOIN user_profiles up_c ON c.id = up_c.user_id
-            LEFT JOIN users e ON p.editor_id = e.id
-            LEFT JOIN editor_profiles ep ON e.id = ep.user_id
-            WHERE 1=1
-        ";
-        
+        $query = "SELECT * FROM projects WHERE 1=1";
         $params = [];
         
-        // Filter by role
         if ($userRole === 'CLIENT') {
-            $query .= " AND p.client_id = ?";
+            $query .= " AND client_id = ?";
             $params[] = $userId;
         } elseif ($userRole === 'EDITOR') {
-            $query .= " AND (p.editor_id = ? OR p.status = 'OPEN')";
+            $query .= " AND (editor_id = ? OR status = 'OPEN')";
             $params[] = $userId;
         }
         
-        // Filter by status
-        if (isset($_GET['status'])) {
-            $query .= " AND p.status = ?";
-            $params[] = $_GET['status'];
-        }
-        
-        // Search
-        if (isset($_GET['search'])) {
-            $search = '%' . $_GET['search'] . '%';
-            $query .= " AND (p.title LIKE ? OR p.description LIKE ?)";
-            $params[] = $search;
-            $params[] = $search;
-        }
-        
-        // Order
-        $orderBy = $_GET['orderBy'] ?? 'created_at';
-        $orderDir = $_GET['orderDir'] ?? 'DESC';
-        $query .= " ORDER BY p.$orderBy $orderDir";
-        
-        // Pagination
-        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-        $limit = isset($_GET['limit']) ? min(50, (int)$_GET['limit']) : 20;
-        $offset = ($page - 1) * $limit;
-        
-        $query .= " LIMIT ? OFFSET ?";
-        $params[] = $limit;
-        $params[] = $offset;
+        $query .= " ORDER BY created_at DESC LIMIT 20";
         
         $stmt = $db->prepare($query);
         $stmt->execute($params);
@@ -245,55 +153,36 @@ function listProjects($db, $userId, $userRole) {
         
     } catch (Exception $e) {
         error_log("List projects error: " . $e->getMessage());
-        sendJSON(['success' => false, 'message' => 'Error fetching projects'], 500);
+        sendJSON(['success' => false, 'message' => 'Error listing projects'], 500);
     }
 }
 
-/**
- * POST - Create project
- */
-function handlePostRequest($userId, $userRole, $input) {
-    // Removi a verificação rígida de 'action' === 'create' para evitar "Invalid action"
-    // Agora assume que qualquer POST é criação de projeto (comum em APIs simples)
-    // Se quiser actions futuras, adicione switch($input['action'])
-
+function createProject($db, $userId, $userRole, $input) {
     if ($userRole !== 'CLIENT') {
-        sendJSON(['error' => 'Only clients can create projects'], 403);
-        return;
+        sendJSON(['success' => false, 'message' => 'Only clients can create projects'], 403);
     }
     
-    $db = getDatabase();
-    
     try {
-        // Validate required fields (ajustei para ser mais flexível com budget)
+        // Validate required fields
         $required = ['title', 'description', 'specialty', 'deadline'];
         foreach ($required as $field) {
-            if (!isset($input[$field]) || trim($input[$field]) === '') {
-                sendJSON(['success' => false, 'message' => "Field $field is required"], 400);
-                return;
+            if (empty($input[$field])) {
+                sendJSON(['success' => false, 'message' => "Field '$field' is required"], 400);
             }
         }
         
-        // Budget handling flexível (aceita budget_min/max ou budget único)
-        $budgetMin = $input['budget_min'] ?? $input['budget'] ?? null;
-        $budgetMax = $input['budget_max'] ?? $input['budget'] ?? null;
-        $budgetType = $input['budget_type'] ?? 'fixed';
-        
-        if (!$budgetMin || !$budgetMax) {
-            sendJSON(['success' => false, 'message' => 'Budget information is required'], 400);
-            return;
-        }
+        // Budget handling
+        $budgetMin = $input['budget_min'] ?? $input['budget'] ?? 500;
+        $budgetMax = $input['budget_max'] ?? $input['budget'] ?? 1000;
         
         $db->beginTransaction();
         
-        // Create project
         $stmt = $db->prepare("
             INSERT INTO projects (
                 client_id, title, description, video_specialty,
-                budget_type, budget_min, budget_max, deadline,
-                aspect_ratio, video_duration_min, video_duration_max,
-                preferred_software, requirements_document, reference_urls
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                budget_type, budget_min, budget_max, deadline, status,
+                aspect_ratio, video_duration_min, video_duration_max
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'OPEN', ?, ?, ?)
             RETURNING id
         ");
         
@@ -301,38 +190,18 @@ function handlePostRequest($userId, $userRole, $input) {
             $userId,
             $input['title'],
             $input['description'],
-            $input['specialty'],
-            $budgetType,
+            strtoupper($input['specialty']),
+            $input['budget_type'] ?? 'fixed',
             $budgetMin,
             $budgetMax,
             $input['deadline'],
             $input['aspect_ratio'] ?? '16:9',
             $input['duration_min'] ?? null,
-            $input['duration_max'] ?? null,
-            $input['preferred_software'] ?? null,
-            $input['additional_notes'] ?? null,
-            isset($input['reference_urls']) && is_array($input['reference_urls']) ? json_encode($input['reference_urls']) : null
+            $input['duration_max'] ?? null
         ]);
         
         $projectId = $stmt->fetchColumn();
-        
-        // Add uploaded files as assets
-        if (isset($input['uploaded_files']) && is_array($input['uploaded_files'])) {
-            $stmt = $db->prepare("
-                INSERT INTO project_assets (project_id, uploader_id, file_name, file_url, file_type)
-                VALUES (?, ?, ?, ?, 'REFERENCE')
-            ");
-            
-            foreach ($input['uploaded_files'] as $fileUrl) {
-                $fileName = basename($fileUrl);
-                $stmt->execute([$projectId, $userId, $fileName, $fileUrl]);
-            }
-        }
-        
         $db->commit();
-        
-        // Send notification to matching editors
-        notifyMatchingEditors($db, $projectId, $input['specialty']);
         
         sendJSON([
             'success' => true,
@@ -349,43 +218,26 @@ function handlePostRequest($userId, $userRole, $input) {
     }
 }
 
-/**
- * PUT - Update project
- */
-function handlePutRequest($userId, $userRole, $input) {
-    if (!isset($input['project_id'])) {
-        sendJSON(['error' => 'Project ID required'], 400);
-        return;
-    }
-    
-    $db = getDatabase();
-    
+function updateProject($db, $userId, $userRole, $input) {
     try {
-        // Check ownership
-        $stmt = $db->prepare("SELECT client_id, editor_id, status FROM projects WHERE id = ?");
+        if (empty($input['project_id'])) {
+            sendJSON(['success' => false, 'message' => 'Project ID required'], 400);
+        }
+        
+        $stmt = $db->prepare("SELECT client_id FROM projects WHERE id = ?");
         $stmt->execute([$input['project_id']]);
         $project = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if (!$project) {
             sendJSON(['success' => false, 'message' => 'Project not found'], 404);
-            return;
         }
         
-        // Check permission
         if ($userRole === 'CLIENT' && $project['client_id'] !== $userId) {
-            sendJSON(['error' => 'Access denied'], 403);
-            return;
+            sendJSON(['success' => false, 'message' => 'Access denied'], 403);
         }
         
-        if ($userRole === 'EDITOR' && $project['editor_id'] !== $userId) {
-            sendJSON(['error' => 'Access denied'], 403);
-            return;
-        }
-        
-        // Build update query
         $updates = [];
         $params = [];
-        
         $allowedFields = ['title', 'description', 'budget_min', 'budget_max', 'deadline', 'status'];
         
         foreach ($allowedFields as $field) {
@@ -396,8 +248,7 @@ function handlePutRequest($userId, $userRole, $input) {
         }
         
         if (empty($updates)) {
-            sendJSON(['error' => 'No fields to update'], 400);
-            return;
+            sendJSON(['success' => false, 'message' => 'No fields to update'], 400);
         }
         
         $params[] = $input['project_id'];
@@ -409,87 +260,35 @@ function handlePutRequest($userId, $userRole, $input) {
         sendJSON(['success' => true, 'message' => 'Project updated']);
         
     } catch (Exception $e) {
-        error_log("Update project error: " . $e->getMessage());
+        error_log("Update error: " . $e->getMessage());
         sendJSON(['success' => false, 'message' => 'Error updating project'], 500);
     }
 }
 
-/**
- * DELETE - Delete project
- */
-function handleDeleteRequest($userId, $userRole, $input) {
-    if (!isset($input['project_id'])) {
-        sendJSON(['error' => 'Project ID required'], 400);
-        return;
-    }
-    
-    if ($userRole !== 'CLIENT' && $userRole !== 'ADMIN') {
-        sendJSON(['error' => 'Permission denied'], 403);
-        return;
-    }
-    
-    $db = getDatabase();
-    
+function deleteProject($db, $userId, $userRole, $input) {
     try {
-        // Check ownership
-        if ($userRole === 'CLIENT') {
-            $stmt = $db->prepare("SELECT client_id FROM projects WHERE id = ?");
-            $stmt->execute([$input['project_id']]);
-            $project = $stmt->fetch(PDO::FETCH_ASSOC);
-            
-            if (!$project || $project['client_id'] !== $userId) {
-                sendJSON(['error' => 'Access denied'], 403);
-                return;
-            }
+        if (empty($input['project_id'])) {
+            sendJSON(['success' => false, 'message' => 'Project ID required'], 400);
         }
         
-        // Soft delete
-        $stmt = $db->prepare("UPDATE projects SET deleted_at = NOW() WHERE id = ?");
-        $stmt->execute([$input['project_id']]);
+        if ($userRole !== 'CLIENT' && $userRole !== 'ADMIN') {
+            sendJSON(['success' => false, 'message' => 'Permission denied'], 403);
+        }
+        
+        $stmt = $db->prepare("UPDATE projects SET status = 'CANCELLED' WHERE id = ? AND client_id = ?");
+        $stmt->execute([$input['project_id'], $userId]);
         
         sendJSON(['success' => true, 'message' => 'Project deleted']);
         
     } catch (Exception $e) {
-        error_log("Delete project error: " . $e->getMessage());
+        error_log("Delete error: " . $e->getMessage());
         sendJSON(['success' => false, 'message' => 'Error deleting project'], 500);
     }
 }
 
-/**
- * Helper: Notify matching editors
- */
-function notifyMatchingEditors($db, $projectId, $specialty) {
-    try {
-        $stmt = $db->prepare("
-            SELECT user_id FROM editor_profiles 
-            WHERE ? = ANY(specialties) AND available_for_hire = TRUE
-        ");
-        $stmt->execute([$specialty]);
-        $editors = $stmt->fetchAll(PDO::FETCH_COLUMN);
-        
-        $stmt = $db->prepare("
-            INSERT INTO notifications (user_id, type, title, message, related_id, related_type)
-            VALUES (?, 'new_project', 'Novo Projeto Disponível', ?, ?, 'project')
-        ");
-        
-        foreach ($editors as $editorId) {
-            $stmt->execute([
-                $editorId,
-                "Um novo projeto na categoria $specialty está disponível!",
-                $projectId
-            ]);
-        }
-    } catch (Exception $e) {
-        error_log("Notify editors error: " . $e->getMessage());
-    }
-}
-
-echo json_encode(['success' => false, 'message' => 'Invalid action']);
-exit;
-
 function sendJSON($data, $statusCode = 200) {
     http_response_code($statusCode);
-    echo json_encode($data, JSON_PRETTY_PRINT);
+    echo json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
     exit;
 }
 
