@@ -253,11 +253,10 @@ function listProjects($db, $userId, $userRole) {
  * POST - Create project
  */
 function handlePostRequest($userId, $userRole, $input) {
-    if ($input['action'] !== 'create') {
-        sendJSON(['error' => 'Invalid action'], 400);
-        return;
-    }
-    
+    // Removi a verificação rígida de 'action' === 'create' para evitar "Invalid action"
+    // Agora assume que qualquer POST é criação de projeto (comum em APIs simples)
+    // Se quiser actions futuras, adicione switch($input['action'])
+
     if ($userRole !== 'CLIENT') {
         sendJSON(['error' => 'Only clients can create projects'], 403);
         return;
@@ -266,13 +265,23 @@ function handlePostRequest($userId, $userRole, $input) {
     $db = getDatabase();
     
     try {
-        // Validate required fields
-        $required = ['title', 'description', 'specialty', 'budget_min', 'budget_max', 'deadline'];
+        // Validate required fields (ajustei para ser mais flexível com budget)
+        $required = ['title', 'description', 'specialty', 'deadline'];
         foreach ($required as $field) {
-            if (!isset($input[$field]) || empty($input[$field])) {
+            if (!isset($input[$field]) || trim($input[$field]) === '') {
                 sendJSON(['success' => false, 'message' => "Field $field is required"], 400);
                 return;
             }
+        }
+        
+        // Budget handling flexível (aceita budget_min/max ou budget único)
+        $budgetMin = $input['budget_min'] ?? $input['budget'] ?? null;
+        $budgetMax = $input['budget_max'] ?? $input['budget'] ?? null;
+        $budgetType = $input['budget_type'] ?? 'fixed';
+        
+        if (!$budgetMin || !$budgetMax) {
+            sendJSON(['success' => false, 'message' => 'Budget information is required'], 400);
+            return;
         }
         
         $db->beginTransaction();
@@ -293,16 +302,16 @@ function handlePostRequest($userId, $userRole, $input) {
             $input['title'],
             $input['description'],
             $input['specialty'],
-            $input['budget_type'] ?? 'fixed',
-            $input['budget_min'],
-            $input['budget_max'],
+            $budgetType,
+            $budgetMin,
+            $budgetMax,
             $input['deadline'],
             $input['aspect_ratio'] ?? '16:9',
             $input['duration_min'] ?? null,
             $input['duration_max'] ?? null,
             $input['preferred_software'] ?? null,
             $input['additional_notes'] ?? null,
-            isset($input['reference_url']) ? json_encode($input['reference_url']) : null
+            isset($input['reference_urls']) && is_array($input['reference_urls']) ? json_encode($input['reference_urls']) : null
         ]);
         
         $projectId = $stmt->fetchColumn();
@@ -327,14 +336,16 @@ function handlePostRequest($userId, $userRole, $input) {
         
         sendJSON([
             'success' => true,
-            'message' => 'Project created successfully',
+            'message' => 'Projeto criado com sucesso!',
             'project_id' => $projectId
         ], 201);
         
     } catch (Exception $e) {
-        $db->rollBack();
+        if ($db->inTransaction()) {
+            $db->rollBack();
+        }
         error_log("Create project error: " . $e->getMessage());
-        sendJSON(['success' => false, 'message' => 'Error creating project'], 500);
+        sendJSON(['success' => false, 'message' => 'Erro ao criar projeto: ' . $e->getMessage()], 500);
     }
 }
 

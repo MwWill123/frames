@@ -14,13 +14,9 @@ setCorsHeaders();
 
 header('Content-Type: application/json');
 
-require_once __DIR__ . '/../config/database.php'; // PostgreSQL Supabase
-
-define('UPLOAD_DIR', __DIR__ . '/../uploads/'); // caminho relativo para imagens
+require_once __DIR__ . '/../config/database.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
-$input = json_decode(file_get_contents('php://input'), true);
-
 $db = getDatabase();
 
 function sendJSON($data, $statusCode = 200) {
@@ -40,7 +36,7 @@ if ($method === 'GET') {
             ep.average_rating as rating,
             ep.total_reviews as reviews,
             ep.avatar_url as image,
-            ep.featured
+            ep.is_featured as featured  -- coluna correta (hint do erro)
         FROM editor_profiles ep
         JOIN users u ON ep.user_id = u.id
         WHERE u.role = 'EDITOR' AND u.is_active = TRUE";
@@ -48,14 +44,14 @@ if ($method === 'GET') {
         $params = [];
 
         if (isset($_GET['featured']) && $_GET['featured'] === 'true') {
-            $query .= " AND ep.featured = TRUE";
+            $query .= " AND ep.is_featured = TRUE";
         }
 
         if (isset($_GET['limit'])) {
             $query .= " LIMIT ?";
             $params[] = (int)$_GET['limit'];
         } else {
-            $query .= " LIMIT 10"; // default
+            $query .= " LIMIT 4";
         }
 
         $stmt = $db->prepare($query);
