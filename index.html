@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FRAMES - Unlock Your Visual Story</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Gallery -->
+    <div class="background-gallery" id="bgGallery"></div>
+
+    <!-- Header -->
+    <header class="header">
+        <!-- Header removed - navigation moved to footer -->
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="hero-title">FRAMES</h1>
+            <p class="hero-subtitle">UNLOCK YOUR VISUAL STORY</p>
+            
+            <!-- Search Bar -->
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="QUAL O SUR FORMATO?" class="search-input">
+                <button class="search-btn" id="searchBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                        <path d="M9 17A8 8 0 1 0 9 1a8 8 0 0 0 0 16zM19 19l-4.35-4.35" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Format Categories -->
+            <div class="format-categories">
+                <div class="format-item" data-format="reels">
+                    <div class="format-icon">
+                        <svg width="40" height="60" viewBox="0 0 40 60" fill="none">
+                            <rect x="8" y="5" width="24" height="50" rx="3" stroke="currentColor" stroke-width="2"/>
+                            <line x1="8" y1="15" x2="32" y2="15" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <p>Reels/TikTok</p>
+                </div>
+
+                <div class="format-item" data-format="youtube">
+                    <div class="format-icon">
+                        <svg width="60" height="50" viewBox="0 0 60 50" fill="none">
+                            <rect x="5" y="10" width="50" height="30" rx="3" stroke="currentColor" stroke-width="2"/>
+                            <path d="M25 20 L35 25 L25 30 Z" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <p>YouTube Vlog</p>
+                </div>
+
+                <div class="format-item" data-format="documentario">
+                    <div class="format-icon">
+                        <svg width="60" height="50" viewBox="0 0 60 50" fill="none">
+                            <rect x="5" y="10" width="50" height="30" rx="2" stroke="currentColor" stroke-width="2"/>
+                            <rect x="12" y="17" width="15" height="10" stroke="currentColor" stroke-width="1.5"/>
+                            <line x1="30" y1="19" x2="45" y2="19" stroke="currentColor" stroke-width="1.5"/>
+                            <line x1="30" y1="25" x2="45" y2="25" stroke="currentColor" stroke-width="1.5"/>
+                            <line x1="12" y1="31" x2="45" y2="31" stroke="currentColor" stroke-width="1.5"/>
+                        </svg>
+                    </div>
+                    <p>Documentário</p>
+                </div>
+
+                <div class="format-item" data-format="comercial">
+                    <div class="format-icon">
+                        <svg width="60" height="50" viewBox="0 0 60 50" fill="none">
+                            <path d="M10 35 L15 15 L25 20 L20 30 L30 25 L35 35 L45 30 L50 40" stroke="currentColor" stroke-width="2" fill="none"/>
+                            <circle cx="20" cy="25" r="3" fill="currentColor"/>
+                            <circle cx="35" cy="30" r="3" fill="currentColor"/>
+                        </svg>
+                    </div>
+                    <p>Comercial</p>
+                </div>
+
+                <div class="format-item active" data-format="gameplay">
+                    <div class="format-icon">
+                        <svg width="60" height="50" viewBox="0 0 60 50" fill="none">
+                            <rect x="10" y="15" width="40" height="20" rx="3" stroke="currentColor" stroke-width="2"/>
+                            <circle cx="22" cy="25" r="3" stroke="currentColor" stroke-width="2"/>
+                            <line x1="36" y1="22" x2="36" y2="28" stroke="currentColor" stroke-width="2"/>
+                            <line x1="33" y1="25" x2="39" y2="25" stroke="currentColor" stroke-width="2"/>
+                            <line x1="42" y1="23" x2="44" y2="23" stroke="currentColor" stroke-width="2"/>
+                            <line x1="42" y1="27" x2="44" y2="27" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </div>
+                    <p>Gameplay</p>
+                    <span class="format-badge">CRIAR VÍDEOS VERTICAIS</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Sidebar Filters -->
+    <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <h3>FILTROS</h3>
+            <button class="close-sidebar" id="closeSidebar">&times;</button>
+        </div>
+        
+        <div class="filter-section">
+            <div class="filter-item">
+                <div class="filter-avatar">
+                    <img src="https://via.placeholder.com/40" alt="User">
+                    <span>SOFTWARE</span>
+                </div>
+            </div>
+
+            <div class="filter-item">
+                <label class="filter-label">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2L3 7v6c0 4.42 3.58 8 7 8s7-3.58 7-8V7l-7-5z"/>
+                    </svg>
+                    <span>PAINEL FREE</span>
+                    <input type="checkbox" class="toggle-switch" checked>
+                </label>
+            </div>
+
+            <div class="filter-item">
+                <label class="filter-label">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 3h14v14H3V3zm2 2v10h10V5H5z"/>
+                    </svg>
+                    <span>ESTILO</span>
+                    <input type="checkbox" class="toggle-switch">
+                </label>
+            </div>
+
+            <div class="filter-item">
+                <label class="filter-label">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M10 2L2 7v11h6v-6h4v6h6V7l-8-5z"/>
+                    </svg>
+                    <span>Final CO</span>
+                    <input type="checkbox" class="toggle-switch" checked>
+                </label>
+            </div>
+
+            <div class="filter-item">
+                <label class="filter-label">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                        <path d="M3 3h14v3H3V3zm0 5h14v3H3V8zm0 5h14v3H3v-3z"/>
+                    </svg>
+                    <span>Corporate</span>
+                    <input type="checkbox" class="toggle-switch" checked>
+                </label>
+            </div>
+        </div>
+    </aside>
+
+    <!-- Editors Section -->
+    <section class="editors-section">
+        <div class="container">
+            <h2 class="section-title">EDITORS EM DESTALDE</h2>
+            
+            <div class="editors-carousel" id="editorsCarousel">
+                <!-- Editor cards will be loaded dynamically -->
+            </div>
+
+            <button class="carousel-nav prev" id="prevBtn">‹</button>
+            <button class="carousel-nav next" id="nextBtn">›</button>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <nav class="footer-nav">
+                <a href="#sobre">SOBRE NÓS</a>
+                <a href="#como-funciona">COMO FUNCIONA</a>
+                <div class="footer-logo">FRAMES</div>
+                <a href="#funciona">COMO FUNCIONA</a>
+                <a href="#contato">CONTATO</a>
+            </nav>
+        </div>
+    </footer>
+
+    <!-- Toggle Sidebar Button -->
+    <button class="toggle-sidebar-btn" id="toggleSidebar">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <line x1="3" y1="6" x2="21" y2="6" stroke="currentColor" stroke-width="2"/>
+            <line x1="3" y1="12" x2="21" y2="12" stroke="currentColor" stroke-width="2"/>
+            <line x1="3" y1="18" x2="21" y2="18" stroke="currentColor" stroke-width="2"/>
+        </svg>
+    </button>
+
+    <script src="js/data.js"></script>
+    <script src="js/main.js"></script>
+</body>
+</html>

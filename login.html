@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - FRAMES</title>
+    <link rel="stylesheet" href="/css/login.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="login-container">
+        <!-- Left Side - Branding -->
+        <div class="login-brand">
+            <div class="brand-content">
+                <h1 class="brand-logo">FRAMES</h1>
+                <p class="brand-tagline">Unlock Your Visual Story</p>
+                
+                <div class="brand-features">
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M12 6v6l4 2"/>
+                        </svg>
+                        <span>Entrega rápida e profissional</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2L2 7v10c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V7l-10-5z"/>
+                        </svg>
+                        <span>Pagamento seguro com Escrow</span>
+                    </div>
+                    <div class="feature-item">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                        <span>Editores verificados e avaliados</span>
+                    </div>
+                </div>
+                
+                <div class="brand-stats">
+                    <div class="stat">
+                        <span class="stat-number">10K+</span>
+                        <span class="stat-label">Projetos concluídos</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">500+</span>
+                        <span class="stat-label">Editores profissionais</span>
+                    </div>
+                    <div class="stat">
+                        <span class="stat-number">98%</span>
+                        <span class="stat-label">Satisfação dos clientes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Side - Login Form -->
+        <div class="login-form-container">
+            <div class="form-wrapper">
+                <!-- Tabs -->
+                <div class="auth-tabs">
+                    <button class="tab-btn active" data-tab="login">Login</button>
+                    <button class="tab-btn" data-tab="register">Criar Conta</button>
+                </div>
+
+                <!-- Login Form -->
+                <form id="loginForm" class="auth-form active">
+                    <h2 class="form-title">Bem-vindo de volta</h2>
+                    <p class="form-subtitle">Entre para continuar sua jornada criativa</p>
+
+                    <div class="form-group">
+                        <label for="loginEmail">E-mail</label>
+                        <input type="email" id="loginEmail" name="email" placeholder="seu@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Senha</label>
+                        <input type="password" id="loginPassword" name="password" placeholder="••••••••" required>
+                    </div>
+
+                    <div class="form-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="remember">
+                            <span>Lembrar de mim</span>
+                        </label>
+                        <a href="#forgot" class="forgot-link">Esqueceu a senha?</a>
+                    </div>
+
+                    <button type="submit" class="btn-primary" id="loginBtn">
+                        <span>Entrar</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 10h10M12 7l3 3-3 3"/>
+                        </svg>
+                    </button>
+
+                    <div class="divider">
+                        <span>ou continue com</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button type="button" class="btn-social btn-google">
+                            <svg width="20" height="20" viewBox="0 0 20 20">
+                                <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
+                                <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z"/>
+                                <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z"/>
+                                <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z"/>
+                            </svg>
+                            <span>Google</span>
+                        </button>
+                        <button type="button" class="btn-social btn-apple">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M15.5 17.5c-1.2 1.2-2.5 1.2-3.8.2-1.3-1-2.5-1-3.9 0-1.7 1.3-2.6 1.1-3.8-.2C.5 13.9-.5 9.4 1 5.7c1-2.4 2.8-3.9 5-4 1.5 0 2.5.8 3.3.8.9 0 2.2-.9 3.9-.8 1.3.1 2.4.6 3.1 1.4-3 1.8-2.6 6.1.7 7.4-.6 1.5-1.3 3-2.5 4zM10.1 5c-.2-2 1.5-3.7 3.6-3.9.3 2.3-2 4.3-3.6 3.9z"/>
+                            </svg>
+                            <span>Apple</span>
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Register Form -->
+                <form id="registerForm" class="auth-form">
+                    <h2 class="form-title">Criar sua conta</h2>
+                    <p class="form-subtitle">Junte-se à comunidade de criadores</p>
+
+                    <div class="role-selector">
+                        <label class="role-option">
+                            <input type="radio" name="role" value="CLIENT" checked>
+                            <div class="role-card">
+                                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="4" y="6" width="24" height="20" rx="2"/>
+                                    <path d="M4 10h24"/>
+                                    <circle cx="16" cy="18" r="3"/>
+                                </svg>
+                                <span class="role-title">Cliente</span>
+                                <span class="role-desc">Contratar editores</span>
+                            </div>
+                        </label>
+                        <label class="role-option">
+                            <input type="radio" name="role" value="EDITOR">
+                            <div class="role-card">
+                                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="8" width="28" height="16" rx="2"/>
+                                    <path d="M12 14l4 4 8-8"/>
+                                </svg>
+                                <span class="role-title">Editor</span>
+                                <span class="role-desc">Oferecer serviços</span>
+                            </div>
+                        </label>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerName">Nome completo</label>
+                        <input type="text" id="registerName" name="displayName" placeholder="Seu nome" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerEmail">E-mail</label>
+                        <input type="email" id="registerEmail" name="email" placeholder="seu@email.com" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerPassword">Senha</label>
+                        <input type="password" id="registerPassword" name="password" placeholder="Mínimo 8 caracteres" required>
+                        <div class="password-strength" id="passwordStrength"></div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="registerPasswordConfirm">Confirmar senha</label>
+                        <input type="password" id="registerPasswordConfirm" name="passwordConfirm" placeholder="Digite novamente" required>
+                    </div>
+
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="terms" required>
+                        <span>Concordo com os <a href="/terms">Termos de Uso</a> e <a href="/privacy">Política de Privacidade</a></span>
+                    </label>
+
+                    <button type="submit" class="btn-primary" id="registerBtn">
+                        <span>Criar conta</span>
+                        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 10h10M12 7l3 3-3 3"/>
+                        </svg>
+                    </button>
+
+                    <div class="divider">
+                        <span>ou continue com</span>
+                    </div>
+
+                    <div class="social-login">
+                        <button type="button" class="btn-social btn-google">
+                            <svg width="20" height="20" viewBox="0 0 20 20">
+                                <path fill="#4285F4" d="M19.6 10.23c0-.82-.1-1.42-.25-2.05H10v3.72h5.5c-.15.96-.74 2.31-2.04 3.22v2.45h3.16c1.89-1.73 2.98-4.3 2.98-7.34z"/>
+                                <path fill="#34A853" d="M13.46 15.13c-.83.59-1.96 1-3.46 1-2.64 0-4.88-1.74-5.68-4.15H1.07v2.52C2.72 17.75 6.09 20 10 20c2.7 0 4.96-.89 6.62-2.42l-3.16-2.45z"/>
+                                <path fill="#FBBC05" d="M3.99 10c0-.69.12-1.35.32-1.97V5.51H1.07A9.973 9.973 0 000 10c0 1.61.39 3.14 1.07 4.49l3.24-2.52c-.2-.62-.32-1.28-.32-1.97z"/>
+                                <path fill="#EA4335" d="M10 3.88c1.88 0 3.13.81 3.85 1.48l2.84-2.76C14.96.99 12.7 0 10 0 6.09 0 2.72 2.25 1.07 5.51l3.24 2.52C5.12 5.62 7.36 3.88 10 3.88z"/>
+                            </svg>
+                            <span>Google</span>
+                        </button>
+                        <button type="button" class="btn-social btn-apple">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="currentColor">
+                                <path d="M15.5 17.5c-1.2 1.2-2.5 1.2-3.8.2-1.3-1-2.5-1-3.9 0-1.7 1.3-2.6 1.1-3.8-.2C.5 13.9-.5 9.4 1 5.7c1-2.4 2.8-3.9 5-4 1.5 0 2.5.8 3.3.8.9 0 2.2-.9 3.9-.8 1.3.1 2.4.6 3.1 1.4-3 1.8-2.6 6.1.7 7.4-.6 1.5-1.3 3-2.5 4zM10.1 5c-.2-2 1.5-3.7 3.6-3.9.3 2.3-2 4.3-3.6 3.9z"/>
+                            </svg>
+                            <span>Apple</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <p>Processando...</p>
+    </div>
+
+    <!-- Toast Notification -->
+    <div class="toast" id="toast"></div>
+
+    <script src="/js/login.js"></script>
+</body>
+</html>
