@@ -1,5 +1,5 @@
 <?php
-// Global error handling - sempre JSON válido
+// Global handling - sempre JSON válido mesmo em erro fatal
 set_error_handler(function ($severity, $message, $file, $line) {
     if (error_reporting() & $severity) {
         http_response_code(500);
@@ -32,7 +32,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? $_GET['action'] ?? null;
 
-// Auth
+// Auth único
 $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
 $auth = new Auth(getDatabase());
 $authResult = $auth->verifyToken($token);
@@ -46,10 +46,10 @@ if (!$authResult['success']) {
 $userId = $authResult['data']->user_id;
 $userRole = $authResult['data']->role;
 
+$db = getDatabase();
+
 // Route
 if ($method === 'GET') {
-    $db = getDatabase();
-
     // STATS
     if ($action === 'stats') {
         try {
