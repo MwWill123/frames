@@ -77,11 +77,7 @@ loginForm.addEventListener('submit', async (e) => {
     showLoading(true);
     
     try {
-<<<<<<< HEAD
         const response = await fetch(`${API_BASE}/auth.php`, {
-=======
-        const response = await fetch(`/php/auth.php`, {
->>>>>>> 4f4e104576569a17e58fc20a4d37cd88e9a2743f
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -159,11 +155,7 @@ registerForm.addEventListener('submit', async (e) => {
     showLoading(true);
     
     try {
-<<<<<<< HEAD
         const response = await fetch(`${API_BASE}/auth.php`, {
-=======
-        const response = await fetch(`/php/auth.php`, {
->>>>>>> 4f4e104576569a17e58fc20a4d37cd88e9a2743f
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -230,11 +222,7 @@ document.querySelectorAll('.forgot-link').forEach(link => {
         showLoading(true);
         
         try {
-<<<<<<< HEAD
             const response = await fetch(`${API_BASE}/auth.php`, {
-=======
-            const response = await fetch(`/php/auth.php`, {
->>>>>>> 4f4e104576569a17e58fc20a4d37cd88e9a2743f
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -308,11 +296,7 @@ async function verifyEmail(token) {
     showLoading(true);
     
     try {
-<<<<<<< HEAD
         const response = await fetch(`${API_BASE}/auth.php`, {
-=======
-        const response = await fetch(`/php/auth.php`, {
->>>>>>> 4f4e104576569a17e58fc20a4d37cd88e9a2743f
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -380,11 +364,7 @@ function showPasswordResetForm(token) {
         showLoading(true);
         
         try {
-<<<<<<< HEAD
             const response = await fetch(`${API_BASE}/auth.php`, {
-=======
-            const response = await fetch(`/php/auth.php`, {
->>>>>>> 4f4e104576569a17e58fc20a4d37cd88e9a2743f
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
