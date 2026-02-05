@@ -107,34 +107,64 @@ class Auth {
     // ... (Mantenha o método verifyToken aqui se precisar) ...
 }
 
-// 4. EXECUÇÃO DA LÓGICA (Isso estava faltando no seu arquivo original)
+// 4. EXECUÇÃO DA LÓGICA
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    // Recebe o JSON cru
+    // Recebe o JSON cru do frontend
     $input = file_get_contents("php://input");
     $data = json_decode($input);
 
-    // Verifica se os dados chegaram
+    // Verifica se os dados mínimos chegaram
     if (!isset($data->email) || !isset($data->password)) {
-        echo json_encode(['success' => false, 'message' => 'Email and password required']);
+        echo json_encode(['success' => false, 'message' => 'Email e senha são obrigatórios']);
         exit;
     }
 
-    // Instancia o Auth. 
-    // NOTA: $database deve vir do arquivo config/database.php incluído acima.
-    // Se o seu database.php chama a variável de $conn ou $pdo, altere abaixo:
-    if (isset($database)) {
-        $auth = new Auth($database);
-    } elseif (isset($pdo)) {
-        $auth = new Auth($pdo);
-    } elseif (isset($conn)) {
-        $auth = new Auth($conn);
-    } else {
-        echo json_encode(['success' => false, 'message' => 'Database connection variable not found']);
-        exit;
-    }
+    // Inicializa a conexão usando a função definida em database.php ou config.php
+    try {
+        // Seu arquivo database.php define getDatabase() e config.php define getDB()
+        // Ambos retornam a conexão PDO necessária.
+        $dbConnection = getDatabase(); 
+        
+        if (!$dbConnection) {
+            throw new Exception("Falha ao obter instância do banco de dados.");
+        }
 
-    // Executa o login
-    $result = $auth->login($data->email, $data->password);
-    echo json_encode($result);
+        $auth = new Auth($dbConnection);
+
+        // Verifica qual ação o login.js enviou (login ou register)
+        $action = isset($data->action) ? $data->action : 'login';
+
+        if ($action === 'login') {
+            $result = $auth->login($data->email, $data->password);
+            
+            // Adiciona o redirecionamento esperado pelo seu login.js
+            if ($result['success']) {
+                $role = strtoupper($result['data']['role']);
+                $redirectMap = [
+                    'ADMIN' => '/admin/dashboard.html',
+                    'EDITOR' => '/editor/dashboard.html',
+                    'CLIENT' => '/client/dashboard.html'
+                ];
+                $result['redirect'] = $redirectMap[$role] ?? '/client/dashboard.html';
+                $result['user'] = $result['data']; // Compatibilidade com login.js:115
+            }
+            
+            echo json_encode($result);
+        } elseif ($action === 'register') {
+            $result = $auth->register(
+                $data->email, 
+                $data->password, 
+                $data->role ?? 'CLIENT', 
+                $data->displayName ?? null
+            );
+            echo json_encode($result);
+        } else {
+            echo json_encode(['success' => false, 'message' => 'Ação não reconhecida']);
+        }
+
+    } catch (Exception $e) {
+        echo json_encode(['success' => false, 'message' => 'Erro interno: ' . $e->getMessage()]);
+    }
+    exit;
 }
 ?>
