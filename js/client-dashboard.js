@@ -1,6 +1,6 @@
 // ==================== CLIENT DASHBOARD JS ====================
 
-const API_BASE = '/api';
+const API_BASE = 'https://frames-will.infinityfree.me/api/auth.php';
 let currentStep = 1;
 let projectData = {};
 

@@ -1,6 +1,6 @@
 // ==================== LOGIN.JS - FRAMES AUTHENTICATION ====================
 
-const API_BASE = '/api';
+const API_BASE = 'https://frames-will.infinityfree.me/api/auth.php';
 
 // DOM Elements
 const loginForm = document.getElementById('loginForm');
