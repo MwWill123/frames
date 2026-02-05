@@ -1,9 +1,9 @@
 <?php
-// Global handling para sempre retornar JSON válido (mesmo em erro fatal)
+// Global error handling - sempre JSON válido
 set_error_handler(function ($severity, $message, $file, $line) {
     if (error_reporting() & $severity) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file:$line"]);
+        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file on line $line"]);
         exit;
     }
 });
@@ -32,7 +32,7 @@ $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? $_GET['action'] ?? null;
 
-// Auth check (só uma vez)
+// Auth
 $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
 $auth = new Auth(getDatabase());
 $authResult = $auth->verifyToken($token);
@@ -50,7 +50,7 @@ $userRole = $authResult['data']->role;
 if ($method === 'GET') {
     $db = getDatabase();
 
-    // STATS ENDPOINT (prioridade)
+    // STATS
     if ($action === 'stats') {
         try {
             $stmt = $db->prepare("
@@ -473,6 +473,9 @@ function notifyMatchingEditors($db, $projectId, $specialty) {
         error_log("Notify editors error: " . $e->getMessage());
     }
 }
+
+echo json_encode(['success' => false, 'message' => 'Invalid action']);
+exit;
 
 function sendJSON($data, $statusCode = 200) {
     http_response_code($statusCode);

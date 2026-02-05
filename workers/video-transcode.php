@@ -1,24 +1,18 @@
 #!/usr/bin/env php
 <?php
 /**
- * Video Transcoding Worker
- * FRAMES Platform
- * 
- * This script processes videos using FFmpeg to create web-optimized versions
- * 
- * Usage: php video-transcode.php <unique_id>
+ * Video Transcoding Worker (CLI - não web)
  */
 
-require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/database.php'; // Usa getDatabase() do database.php (Supabase)
 
-// Configuration
-define('UPLOAD_DIR', '/var/www/frames/uploads/');
-define('PROCESSED_DIR', '/var/www/frames/uploads/processed/');
-define('THUMBNAILS_DIR', '/var/www/frames/uploads/thumbnails/');
+define('UPLOAD_DIR', __DIR__ . '/../uploads/');
+define('PROCESSED_DIR', __DIR__ . '/../uploads/processed/');
+define('THUMBNAILS_DIR', __DIR__ . '/../uploads/thumbnails/');
 
-// Create directories if they don't exist
-if (!is_dir(PROCESSED_DIR)) mkdir(PROCESSED_DIR, 0755, true);
-if (!is_dir(THUMBNAILS_DIR)) mkdir(THUMBNAILS_DIR, 0755, true);
+// Cria pastas
+if (!is_dir(PROCESSED_DIR)) mkdir(PROCESSED_DIR, 0777, true);
+if (!is_dir(THUMBNAILS_DIR)) mkdir(THUMBNAILS_DIR, 0777, true);
 
 // Get unique ID from command line
 $uniqueId = $argv[1] ?? null;

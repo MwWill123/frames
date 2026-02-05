@@ -1,24 +1,21 @@
 <?php
-setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
+setCorsHeaders();
 
 header('Content-Type: application/json');
-/**
- * File Upload API with Chunked Upload Support
- * FRAMES Platform
- */
 
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/auth.php';
 
-header('Content-Type: application/json');
-setCorsHeaders();
-
-// Configuration
+// Caminhos relativos (funciona no Alwaysdata)
 define('UPLOAD_DIR', __DIR__ . '/../uploads/');
+define('PROCESSED_DIR', __DIR__ . '/../uploads/processed/');
+define('THUMBNAILS_DIR', __DIR__ . '/../uploads/thumbnails/');
 define('MAX_FILE_SIZE', 10 * 1024 * 1024 * 1024); // 10GB
-define('ALLOWED_VIDEO_TYPES', ['video/mp4', 'video/quicktime', 'video/x-msvideo', 'video/x-matroska']);
-define('ALLOWED_IMAGE_TYPES', ['image/jpeg', 'image/png', 'image/gif', 'image/webp']);
-define('ALLOWED_DOC_TYPES', ['application/pdf', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']);
+
+// Cria pastas se não existirem
+if (!is_dir(UPLOAD_DIR)) mkdir(UPLOAD_DIR, 0777, true);
+if (!is_dir(PROCESSED_DIR)) mkdir(PROCESSED_DIR, 0777, true);
+if (!is_dir(THUMBNAILS_DIR)) mkdir(THUMBNAILS_DIR, 0777, true);
 
 // Authenticate user
 $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
@@ -328,7 +325,7 @@ function queueVideoProcessing($uniqueId, $filePath, $userId) {
         
         // Trigger background worker (you can use a queue system like Redis/RabbitMQ)
         // For now, we'll use a simple approach
-        exec("php " . __DIR__ . "/../workers/video-transcode.php {$uniqueId} > /dev/null 2>&1 &");
+        exec("php " . __DIR__ . '/../workers/video-transcode.php {$uniqueId} > /dev/null 2>&1 &");
         
     } catch (Exception $e) {
         error_log("Queue processing error: " . $e->getMessage());
