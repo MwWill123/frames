@@ -416,21 +416,33 @@ window.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                // Already logged in, redirect
-                const userData = JSON.parse(localStorage.getItem('user_data'));
-                const role = userData?.role || 'CLIENT';
-                
+                // === ADIÇÃO AQUI: salva/atualiza user_data com os dados do backend ===
+                const userData = data.data || {}; // pega os dados retornados pelo verify_token
+                userData.role = (userData.role || 'CLIENT').toUpperCase(); // garante maiúsculo e fallback
+                localStorage.setItem('user_data', JSON.stringify(userData));
+
+                // Redirect
                 const redirectMap = {
                     'ADMIN': '/admin/dashboard.html',
                     'EDITOR': '/editor/dashboard.html',
                     'CLIENT': '/client/dashboard.html'
                 };
                 
-                window.location.href = redirectMap[role];
+                const redirectUrl = redirectMap[userData.role] || '/client/dashboard.html';
+                window.location.href = redirectUrl;
+            } else {
+                // Token inválido → limpa storage
+                localStorage.removeItem('auth_token');
+                sessionStorage.removeItem('auth_token');
+                localStorage.removeItem('user_data');
             }
         })
         .catch(err => {
             console.error('Token verification failed:', err);
+            // Limpa em caso de erro
+            localStorage.removeItem('auth_token');
+            sessionStorage.removeItem('auth_token');
+            localStorage.removeItem('user_data');
         });
     }
 });
