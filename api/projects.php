@@ -67,19 +67,43 @@ switch ($method) {
  */
 function handleGetRequest($userId, $userRole) {
     $db = getDatabase();
-    
+   
     // Stats endpoint
     if (isset($_GET['action']) && $_GET['action'] === 'stats') {
-        getProjectStats($db, $userId, $userRole);
-        return;
+        try {
+            $stmt = $db->prepare("
+                SELECT 
+                    COUNT(*) as total_projects,
+                    COUNT(CASE WHEN status = 'OPEN' THEN 1 END) as active_projects,
+                    COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as completed_projects,
+                    COALESCE(SUM(budget), 0) as total_invested
+                FROM projects 
+                WHERE client_id = ?
+            ");
+            $stmt->execute([$userId]);
+            $stats = $stmt->fetch();
+            
+            sendJSON([
+                'success' => true, 
+                'data' => $stats ?: [
+                    'total_projects' => 0, 
+                    'active_projects' => 0, 
+                    'completed_projects' => 0, 
+                    'total_invested' => 0
+                ]
+            ]);
+        } catch (Exception $e) {
+            sendJSON(['success' => false, 'message' => 'Stats error: ' . $e->getMessage()], 500);
+        }
+        exit; // importante para parar aqui
     }
-    
+   
     // Single project
     if (isset($_GET['id'])) {
         getSingleProject($db, $_GET['id'], $userId, $userRole);
         return;
     }
-    
+   
     // List projects
     listProjects($db, $userId, $userRole);
 }
