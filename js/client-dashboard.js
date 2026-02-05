@@ -1,6 +1,6 @@
 // ==================== CLIENT DASHBOARD JS ====================
 
-const API_BASE = 'https://frames-will.infinityfree.me/api';
+const API_BASE = 'https://frames.alwaysdata.net/api';
 let currentStep = 1;
 let projectData = {};
 

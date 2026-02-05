@@ -1,6 +1,6 @@
 // ==================== LOGIN.JS - FRAMES AUTHENTICATION ====================
 
-const API_BASE = 'https://frames-will.infinityfree.me/api';
+const API_BASE = 'https://frames.alwaysdata.net/api';
 
 // DOM Elements
 const loginForm = document.getElementById('loginForm');
@@ -120,7 +120,7 @@ loginForm.addEventListener('submit', async (e) => {
     }
 });
 
-// ==================== REGISTER FORM HANDLER ====================
+// ==================== REGISTER FORM data.sucess ====================
 registerForm.addEventListener('submit', async (e) => {
     e.preventDefault();
     
