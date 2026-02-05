@@ -255,7 +255,7 @@ function saveStepData(step) {
 }
 
 async function submitProject() {
-    showLoading(true);
+    showLoading(true); // Ativa o overlay de loading
     
     try {
         const token = getAuthToken();
@@ -290,12 +290,22 @@ async function submitProject() {
         
         if (result.success) {
             showToast('Projeto criado com sucesso!', 'success');
-            closeNewProjectModal();
             
-            // Reload dashboard
-            setTimeout(() => {
-                loadDashboardData();
-            }, 1000);
+            // Tenta fechar o modal usando a função e um fallback manual
+            if (typeof closeNewProjectModal === 'function') {
+                closeNewProjectModal();
+            } else {
+                const modal = document.getElementById('newProjectModal');
+                if (modal) modal.classList.remove('show');
+            }
+
+            // Resetar o objeto de dados local para não duplicar no próximo envio
+            projectData = {}; 
+            currentStep = 1;
+            
+            // Recarrega o dashboard imediatamente e remove o loading
+            await loadDashboardData(); 
+            
         } else {
             showToast(result.message || 'Erro ao criar projeto', 'error');
         }
@@ -303,6 +313,8 @@ async function submitProject() {
         console.error('Error submitting project:', error);
         showToast('Erro ao conectar com o servidor', 'error');
     } finally {
+        // ESSA LINHA É A QUE TIRA O CARREGANDO. 
+        // Ela roda SEMPRE, independente de dar certo ou errado.
         showLoading(false);
     }
 }
