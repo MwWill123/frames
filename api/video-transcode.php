@@ -12,7 +12,7 @@
 require_once __DIR__ . '/../config/database.php';
 
 // Configuration
-define('UPLOAD_DIR', '/var/www/frames/uploads/');
+define('UPLOAD_DIR', __DIR__ . '/../uploads/');
 define('PROCESSED_DIR', '/var/www/frames/uploads/processed/');
 define('THUMBNAILS_DIR', '/var/www/frames/uploads/thumbnails/');
 
