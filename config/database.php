@@ -3,11 +3,11 @@
  * Database Configuration - PostgreSQL (Supabase)
  */
 
-define('DB_HOST', 'db.qbjchsarlehpysuncbfq.supabase.co'); // seu host real
+define('DB_HOST', 'db.qbjchsarlehpysuncbfq.supabase.co');
 define('DB_PORT', '5432');
 define('DB_NAME', 'postgres');
 define('DB_USER', 'postgres');
-define('DB_PASS', 'Y}AOS=8b8|h3'); // sua senha
+define('DB_PASS', 'Y}AOS=8b8|h3');
 
 define('DB_SSLMODE', 'require');
 
@@ -48,15 +48,5 @@ function getDatabase() {
 
 function getDB() {
     return getDatabase();
-}
-
-function setCorsHeaders() {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
-        exit;
-    }
 }
 ?>

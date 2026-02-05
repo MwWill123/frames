@@ -416,33 +416,30 @@ window.addEventListener('DOMContentLoaded', () => {
         .then(res => res.json())
         .then(data => {
             if (data.success) {
-                // === ADIÇÃO AQUI: salva/atualiza user_data com os dados do backend ===
-                const userData = data.data || {}; // pega os dados retornados pelo verify_token
-                userData.role = (userData.role || 'CLIENT').toUpperCase(); // garante maiúsculo e fallback
-                localStorage.setItem('user_data', JSON.stringify(userData));
+                // === ESSA PARTE É NOVA: salva os dados do usuário retornados pelo backend ===
+                const userDataFromBackend = data.data || {};
+                userDataFromBackend.role = (userDataFromBackend.role || 'CLIENT').toUpperCase();
+                localStorage.setItem('user_data', JSON.stringify(userDataFromBackend));
 
-                // Redirect
+                // Redirect baseado no role salvo
                 const redirectMap = {
                     'ADMIN': '/admin/dashboard.html',
                     'EDITOR': '/editor/dashboard.html',
                     'CLIENT': '/client/dashboard.html'
                 };
                 
-                const redirectUrl = redirectMap[userData.role] || '/client/dashboard.html';
+                const redirectUrl = redirectMap[userDataFromBackend.role] || '/client/dashboard.html';
                 window.location.href = redirectUrl;
             } else {
-                // Token inválido → limpa storage
-                localStorage.removeItem('auth_token');
-                sessionStorage.removeItem('auth_token');
-                localStorage.removeItem('user_data');
+                // Token inválido → limpa tudo
+                localStorage.clear();
+                sessionStorage.clear();
             }
         })
         .catch(err => {
             console.error('Token verification failed:', err);
-            // Limpa em caso de erro
-            localStorage.removeItem('auth_token');
-            sessionStorage.removeItem('auth_token');
-            localStorage.removeItem('user_data');
+            localStorage.clear();
+            sessionStorage.clear();
         });
     }
 });
