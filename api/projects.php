@@ -1,9 +1,9 @@
 <?php
-// Global handling - sempre JSON válido mesmo em erro fatal
+// Global handling - sempre JSON válido
 set_error_handler(function ($severity, $message, $file, $line) {
     if (error_reporting() & $severity) {
         http_response_code(500);
-        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file on line $line"]);
+        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file:$line"]);
         exit;
     }
 });
@@ -32,9 +32,10 @@ $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? $_GET['action'] ?? null;
 
-// Auth único
+// Auth manual (sem output extra)
 $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
-$auth = new Auth(getDatabase());
+$db = getDatabase();
+$auth = new Auth($db);
 $authResult = $auth->verifyToken($token);
 
 if (!$authResult['success']) {
@@ -45,8 +46,6 @@ if (!$authResult['success']) {
 
 $userId = $authResult['data']->user_id;
 $userRole = $authResult['data']->role;
-
-$db = getDatabase();
 
 // Route
 if ($method === 'GET') {

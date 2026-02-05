@@ -1,288 +1,130 @@
 <?php
-setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
+function setCorsHeaders() {
+    header('Access-Control-Allow-Origin: *');
+    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
+    header('Access-Control-Allow-Headers: Content-Type, Authorization');
+    
+    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+        http_response_code(200);
+        exit;
+    }
+}
 
-header('Content-Type: application/json');
-/**
- * Editors API
- * FRAMES - Video Editor Platform
- * Handles CRUD operations for video editors
- */
-
-require_once '../php/config.php';
-
-// Set CORS headers
 setCorsHeaders();
 
-// Get request method
-$method = $_SERVER['REQUEST_METHOD'];
+header('Content-Type: application/json');
 
-// Route the request
-switch ($method) {
-    case 'GET':
-        handleGetRequest();
-        break;
-    case 'POST':
-        handlePostRequest();
-        break;
-    case 'PUT':
-        handlePutRequest();
-        break;
-    case 'DELETE':
-        handleDeleteRequest();
-        break;
-    default:
-        sendJSON(['error' => 'Method not allowed'], 405);
+require_once __DIR__ . '/../config/database.php'; // PostgreSQL Supabase
+
+define('UPLOAD_DIR', __DIR__ . '/../uploads/'); // caminho relativo para imagens
+
+$method = $_SERVER['REQUEST_METHOD'];
+$input = json_decode(file_get_contents('php://input'), true);
+
+$db = getDatabase();
+
+function sendJSON($data, $statusCode = 200) {
+    http_response_code($statusCode);
+    echo json_encode($data, JSON_PRETTY_PRINT);
+    exit;
 }
 
-/**
- * Handle GET requests - Fetch editors
- */
-function handleGetRequest() {
-    $db = getDB();
-    
-    // Check if specific editor ID is requested
-    if (isset($_GET['id'])) {
-        $id = (int)$_GET['id'];
-        $stmt = $db->prepare("SELECT * FROM editors WHERE id = ?");
+// GET - List editors (featured + limit for dashboard)
+if ($method === 'GET') {
+    try {
+        $query = "SELECT 
+            ep.user_id as id,
+            ep.display_name as name,
+            ep.bio as title,
+            ep.primary_software as software,
+            ep.average_rating as rating,
+            ep.total_reviews as reviews,
+            ep.avatar_url as image,
+            ep.featured
+        FROM editor_profiles ep
+        JOIN users u ON ep.user_id = u.id
+        WHERE u.role = 'EDITOR' AND u.is_active = TRUE";
+
+        $params = [];
+
+        if (isset($_GET['featured']) && $_GET['featured'] === 'true') {
+            $query .= " AND ep.featured = TRUE";
+        }
+
+        if (isset($_GET['limit'])) {
+            $query .= " LIMIT ?";
+            $params[] = (int)$_GET['limit'];
+        } else {
+            $query .= " LIMIT 10"; // default
+        }
+
+        $stmt = $db->prepare($query);
+        $stmt->execute($params);
+        $editors = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+        sendJSON(['success' => true, 'data' => $editors]);
+    } catch (Exception $e) {
+        sendJSON(['success' => false, 'message' => 'Error loading editors: ' . $e->getMessage()], 500);
+    }
+}
+
+// POST - Create editor (exemplo básico)
+if ($method === 'POST') {
+    // Auth + validation aqui se precisar (use require auth.php se quiser)
+    // Exemplo simples:
+    try {
+        $data = $input;
+        $userId = $data['user_id']; // do auth
+        $stmt = $db->prepare("
+            INSERT INTO editor_profiles (user_id, display_name, bio, primary_software, avatar_url, featured)
+            VALUES (?, ?, ?, ?, ?, ?)
+        ");
+        $stmt->execute([
+            $userId,
+            $data['display_name'] ?? '',
+            $data['bio'] ?? '',
+            $data['primary_software'] ?? 'PREMIERE_PRO',
+            $data['avatar_url'] ?? '',
+            $data['featured'] ?? false
+        ]);
+
+        sendJSON(['success' => true, 'message' => 'Editor created']);
+    } catch (Exception $e) {
+        sendJSON(['success' => false, 'message' => 'Create error: ' . $e->getMessage()], 500);
+    }
+}
+
+// PUT - Update editor
+if ($method === 'PUT') {
+    // Similar ao POST
+}
+
+// DELETE - Delete editor
+if ($method === 'DELETE') {
+    try {
+        $data = $input;
+        $id = (int)$data['id']; // user_id do editor
+
+        // Get image to delete
+        $stmt = $db->prepare("SELECT avatar_url as image FROM editor_profiles WHERE user_id = ?");
         $stmt->execute([$id]);
         $editor = $stmt->fetch();
-        
-        if ($editor) {
-            sendJSON(['success' => true, 'data' => $editor]);
-        } else {
-            sendJSON(['error' => 'Editor not found'], 404);
-        }
-    } else {
-        // Fetch all editors with optional filters
-        $query = "SELECT * FROM editors WHERE 1=1";
-        $params = [];
-        
-        // Apply search filter
-        if (isset($_GET['search']) && !empty($_GET['search'])) {
-            $search = '%' . $_GET['search'] . '%';
-            $query .= " AND (name LIKE ? OR title LIKE ? OR software LIKE ?)";
-            $params = array_merge($params, [$search, $search, $search]);
-        }
-        
-        // Apply format filter
-        if (isset($_GET['format']) && !empty($_GET['format'])) {
-            $query .= " AND format = ?";
-            $params[] = $_GET['format'];
-        }
-        
-        // Apply software filter
-        if (isset($_GET['software']) && !empty($_GET['software'])) {
-            $query .= " AND software = ?";
-            $params[] = $_GET['software'];
-        }
-        
-        // Apply featured filter
-        if (isset($_GET['featured'])) {
-            $query .= " AND featured = ?";
-            $params[] = $_GET['featured'] ? 1 : 0;
-        }
-        
-        // Add ordering
-        $orderBy = isset($_GET['orderBy']) ? $_GET['orderBy'] : 'created_at';
-        $orderDir = isset($_GET['orderDir']) && $_GET['orderDir'] === 'ASC' ? 'ASC' : 'DESC';
-        $query .= " ORDER BY {$orderBy} {$orderDir}";
-        
-        // Add pagination
-        $page = isset($_GET['page']) ? max(1, (int)$_GET['page']) : 1;
-        $perPage = isset($_GET['perPage']) ? max(1, min(100, (int)$_GET['perPage'])) : 20;
-        $offset = ($page - 1) * $perPage;
-        
-        $query .= " LIMIT ? OFFSET ?";
-        $params[] = $perPage;
-        $params[] = $offset;
-        
-        // Execute query
-        $stmt = $db->prepare($query);
-        $stmt->execute($params);
-        $editors = $stmt->fetchAll();
-        
-        // Get total count for pagination
-        $countQuery = "SELECT COUNT(*) as total FROM editors WHERE 1=1";
-        $countParams = array_slice($params, 0, -2); // Remove LIMIT and OFFSET params
-        
-        if (isset($_GET['search']) && !empty($_GET['search'])) {
-            $search = '%' . $_GET['search'] . '%';
-            $countQuery .= " AND (name LIKE ? OR title LIKE ? OR software LIKE ?)";
-        }
-        if (isset($_GET['format']) && !empty($_GET['format'])) {
-            $countQuery .= " AND format = ?";
-        }
-        if (isset($_GET['software']) && !empty($_GET['software'])) {
-            $countQuery .= " AND software = ?";
-        }
-        if (isset($_GET['featured'])) {
-            $countQuery .= " AND featured = ?";
-        }
-        
-        $countStmt = $db->prepare($countQuery);
-        $countStmt->execute($countParams);
-        $total = $countStmt->fetch()['total'];
-        
-        sendJSON([
-            'success' => true,
-            'data' => $editors,
-            'pagination' => [
-                'page' => $page,
-                'perPage' => $perPage,
-                'total' => $total,
-                'totalPages' => ceil($total / $perPage)
-            ]
-        ]);
-    }
-}
 
-/**
- * Handle POST requests - Create new editor
- */
-function handlePostRequest() {
-    $db = getDB();
-    
-    // Get POST data
-    $data = json_decode(file_get_contents('php://input'), true);
-    
-    // Validate required fields
-    $required = ['name', 'title', 'software'];
-    foreach ($required as $field) {
-        if (!isset($data[$field]) || empty($data[$field])) {
-            sendJSON(['error' => "Field '{$field}' is required"], 400);
-        }
-    }
-    
-    // Sanitize inputs
-    $name = sanitizeInput($data['name']);
-    $title = sanitizeInput($data['title']);
-    $software = sanitizeInput($data['software']);
-    $format = isset($data['format']) ? sanitizeInput($data['format']) : 'general';
-    $rating = isset($data['rating']) ? (int)$data['rating'] : 0;
-    $reviews = isset($data['reviews']) ? (int)$data['reviews'] : 0;
-    $image = isset($data['image']) ? sanitizeInput($data['image']) : '';
-    $featured = isset($data['featured']) ? (int)$data['featured'] : 0;
-    $description = isset($data['description']) ? sanitizeInput($data['description']) : '';
-    
-    // Insert into database
-    $stmt = $db->prepare("
-        INSERT INTO editors (name, title, software, format, rating, reviews, image, featured, description, created_at)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
-    ");
-    
-    try {
-        $stmt->execute([$name, $title, $software, $format, $rating, $reviews, $image, $featured, $description]);
-        $newId = $db->lastInsertId();
-        
-        sendJSON([
-            'success' => true,
-            'message' => 'Editor created successfully',
-            'id' => $newId
-        ], 201);
-    } catch (PDOException $e) {
-        sendJSON(['error' => 'Failed to create editor: ' . $e->getMessage()], 500);
-    }
-}
-
-/**
- * Handle PUT requests - Update editor
- */
-function handlePutRequest() {
-    $db = getDB();
-    
-    // Get PUT data
-    $data = json_decode(file_get_contents('php://input'), true);
-    
-    // Validate ID
-    if (!isset($data['id']) || empty($data['id'])) {
-        sendJSON(['error' => 'Editor ID is required'], 400);
-    }
-    
-    $id = (int)$data['id'];
-    
-    // Check if editor exists
-    $stmt = $db->prepare("SELECT id FROM editors WHERE id = ?");
-    $stmt->execute([$id]);
-    if (!$stmt->fetch()) {
-        sendJSON(['error' => 'Editor not found'], 404);
-    }
-    
-    // Build update query dynamically
-    $updates = [];
-    $params = [];
-    
-    $allowedFields = ['name', 'title', 'software', 'format', 'rating', 'reviews', 'image', 'featured', 'description'];
-    
-    foreach ($allowedFields as $field) {
-        if (isset($data[$field])) {
-            $updates[] = "{$field} = ?";
-            $params[] = in_array($field, ['rating', 'reviews', 'featured']) 
-                ? (int)$data[$field] 
-                : sanitizeInput($data[$field]);
-        }
-    }
-    
-    if (empty($updates)) {
-        sendJSON(['error' => 'No fields to update'], 400);
-    }
-    
-    $params[] = $id;
-    $query = "UPDATE editors SET " . implode(', ', $updates) . ", updated_at = NOW() WHERE id = ?";
-    
-    try {
-        $stmt = $db->prepare($query);
-        $stmt->execute($params);
-        
-        sendJSON([
-            'success' => true,
-            'message' => 'Editor updated successfully'
-        ]);
-    } catch (PDOException $e) {
-        sendJSON(['error' => 'Failed to update editor: ' . $e->getMessage()], 500);
-    }
-}
-
-/**
- * Handle DELETE requests - Delete editor
- */
-function handleDeleteRequest() {
-    $db = getDB();
-    
-    // Get DELETE data
-    $data = json_decode(file_get_contents('php://input'), true);
-    
-    // Validate ID
-    if (!isset($data['id']) || empty($data['id'])) {
-        sendJSON(['error' => 'Editor ID is required'], 400);
-    }
-    
-    $id = (int)$data['id'];
-    
-    // Check if editor exists
-    $stmt = $db->prepare("SELECT id, image FROM editors WHERE id = ?");
-    $stmt->execute([$id]);
-    $editor = $stmt->fetch();
-    
-    if (!$editor) {
-        sendJSON(['error' => 'Editor not found'], 404);
-    }
-    
-    try {
-        // Delete from database
-        $stmt = $db->prepare("DELETE FROM editors WHERE id = ?");
+        // Delete from DB
+        $stmt = $db->prepare("DELETE FROM editor_profiles WHERE user_id = ?");
         $stmt->execute([$id]);
-        
-        // Delete image file if exists
-        if (!empty($editor['image']) && file_exists(UPLOAD_PATH . $editor['image'])) {
-            unlink(UPLOAD_PATH . $editor['image']);
+
+        // Delete image file
+        if (!empty($editor['image']) && file_exists(UPLOAD_DIR . basename($editor['image']))) {
+            unlink(UPLOAD_DIR . basename($editor['image']));
         }
-        
-        sendJSON([
-            'success' => true,
-            'message' => 'Editor deleted successfully'
-        ]);
+
+        sendJSON(['success' => true, 'message' => 'Editor deleted successfully']);
     } catch (PDOException $e) {
-        sendJSON(['error' => 'Failed to delete editor: ' . $e->getMessage()], 500);
+        sendJSON(['success' => false, 'message' => 'Failed to delete editor: ' . $e->getMessage()], 500);
     }
 }
+
+// Default
+sendJSON(['success' => false, 'message' => 'Method not allowed'], 405);
 ?>
