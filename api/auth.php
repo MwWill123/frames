@@ -1,7 +1,8 @@
 <?php
-setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
+setCorsHeaders(); // Chama a função (definida no projects.php ou outro)
 
 header('Content-Type: application/json');
+
 /**
  * Authentication System Simplificado (sem JWT - para testes)
  * FRAMES Platform
@@ -49,16 +50,11 @@ class Auth {
             $stmt->execute([$email, $passwordHash, strtoupper($role)]);
             $userId = $stmt->fetchColumn();
             
-            // Profile creation (mesmo do original - truncado, complete se precisar)
-            if ($role === 'EDITOR' && $displayName) {
+            // Profile creation (simples - ajuste se precisar)
+            if ($displayName) {
+                $profileTable = ($role === 'EDITOR') ? 'editor_profiles' : 'user_profiles';
                 $stmt = $this->db->prepare("
-                    INSERT INTO editor_profiles (user_id, display_name, primary_software, specialties, editor_level)
-                    VALUES (?, ?, 'PREMIERE_PRO', ARRAY['VLOG','YOUTUBE'], 'PRO')
-                ");
-                $stmt->execute([$userId, $displayName]);
-            } elseif ($displayName) {
-                $stmt = $this->db->prepare("
-                    INSERT INTO user_profiles (user_id, display_name)
+                    INSERT INTO $profileTable (user_id, display_name)
                     VALUES (?, ?)
                 ");
                 $stmt->execute([$userId, $displayName]);
@@ -95,7 +91,7 @@ class Auth {
             $stmt = $this->db->prepare("UPDATE users SET api_token = ?, token_expires_at = ? WHERE id = ?");
             $stmt->execute([$token, $expires, $user['id']]);
             
-            // Busca dados do user para retornar
+            // Busca dados do user
             $stmt = $this->db->prepare("SELECT id AS user_id, email, role FROM users WHERE id = ?");
             $stmt->execute([$user['id']]);
             $userData = $stmt->fetch();
@@ -138,10 +134,7 @@ class Auth {
     }
 }
 
-// Processa requests no auth.php (adapte do seu código original - provavelmente você tem um switch para actions)
-header('Content-Type: application/json');
-setCorsHeaders();
-
+// Processa requests
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? '';
 
@@ -160,15 +153,5 @@ if ($action === 'register') {
     echo json_encode($result);
 } else {
     echo json_encode(['success' => false, 'message' => 'Invalid action']);
-}
-function setCorsHeaders() {
-    header('Access-Control-Allow-Origin: *');
-    header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
-    header('Access-Control-Allow-Headers: Content-Type, Authorization');
-
-    if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
-        http_response_code(200);
-        exit;
-    }
 }
 ?>

@@ -1,22 +1,30 @@
 <?php
-setCorsHeaders(); // MOVA PARA O TOPO, antes de tudo
-
-header('Content-Type: application/json');
-// Handling global para erros (sempre JSON)
+// Global error handling (sempre retorna JSON válido, mesmo em fatal)
 set_error_handler(function ($severity, $message, $file, $line) {
     if (error_reporting() & $severity) {
-        sendJSON(['success' => false, 'message' => "PHP Error: $message in $file on line $line"], 500);
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => "PHP Error: $message in $file on line $line"]);
+        exit;
     }
 });
 set_exception_handler(function ($exception) {
-    sendJSON(['success' => false, 'message' => 'Exception: ' . $exception->getMessage()], 500);
+    http_response_code(500);
+    echo json_encode(['success' => false, 'message' => 'Exception: ' . $exception->getMessage()]);
+    exit;
 });
 register_shutdown_function(function () {
     $error = error_get_last();
-    if ($error && $error['type'] === E_ERROR) {
-        sendJSON(['success' => false, 'message' => 'Fatal Error: ' . $error['message']], 500);
+    if ($error && in_array($error['type'], [E_ERROR, E_PARSE, E_CORE_ERROR, E_COMPILE_ERROR])) {
+        http_response_code(500);
+        echo json_encode(['success' => false, 'message' => 'Fatal Error: ' . $error['message']]);
+        exit;
     }
 });
+
+setCorsHeaders();
+
+header('Content-Type: application/json');
+
 /**
  * Projects API
  * FRAMES Platform
@@ -25,14 +33,11 @@ register_shutdown_function(function () {
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/auth.php';
 
-header('Content-Type: application/json');
-setCorsHeaders();
-
 $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 $action = $input['action'] ?? $_GET['action'] ?? null;
 
-// Get authenticated user
+// Auth
 $token = str_replace('Bearer ', '', $_SERVER['HTTP_AUTHORIZATION'] ?? '');
 $auth = new Auth(getDatabase());
 $authResult = $auth->verifyToken($token);
@@ -46,7 +51,7 @@ if (!$authResult['success']) {
 $userId = $authResult['data']->user_id;
 $userRole = $authResult['data']->role;
 
-// Route requests
+// Route
 switch ($method) {
     case 'GET':
         handleGetRequest($userId, $userRole);
@@ -60,6 +65,9 @@ switch ($method) {
     case 'DELETE':
         handleDeleteRequest($userId, $userRole, $input);
         break;
+    default:
+        echo json_encode(['success' => false, 'message' => 'Method not allowed']);
+        exit;
 }
 
 /**
@@ -67,8 +75,8 @@ switch ($method) {
  */
 function handleGetRequest($userId, $userRole) {
     $db = getDatabase();
-   
-    // Stats endpoint
+
+    // STATS ENDPOINT
     if (isset($_GET['action']) && $_GET['action'] === 'stats') {
         try {
             $stmt = $db->prepare("
@@ -78,24 +86,25 @@ function handleGetRequest($userId, $userRole) {
                     COUNT(CASE WHEN status = 'COMPLETED' THEN 1 END) as completed_projects,
                     COALESCE(SUM(budget), 0) as total_invested
                 FROM projects 
-                WHERE client_id = ?
+                WHERE client_id = :userId
             ");
-            $stmt->execute([$userId]);
-            $stats = $stmt->fetch();
-            
-            sendJSON([
-                'success' => true, 
+            $stmt->execute([':userId' => $userId]);
+            $stats = $stmt->fetch(PDO::FETCH_ASSOC);
+
+            echo json_encode([
+                'success' => true,
                 'data' => $stats ?: [
-                    'total_projects' => 0, 
-                    'active_projects' => 0, 
-                    'completed_projects' => 0, 
+                    'total_projects' => 0,
+                    'active_projects' => 0,
+                    'completed_projects' => 0,
                     'total_invested' => 0
                 ]
             ]);
+            exit;
         } catch (Exception $e) {
-            sendJSON(['success' => false, 'message' => 'Stats error: ' . $e->getMessage()], 500);
+            echo json_encode(['success' => false, 'message' => 'Stats error: ' . $e->getMessage()]);
+            exit;
         }
-        exit; // importante para parar aqui
     }
    
     // Single project
