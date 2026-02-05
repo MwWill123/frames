@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cliente | FRAMES</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">FRAMES</h1>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="3" y="11" width="7" height="6"/>
+                    <rect x="11" y="3" width="6" height="13"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            
+            <a href="#projects" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="16" height="12" rx="2"/>
+                    <path d="M2 8h16"/>
+                </svg>
+                <span>Meus Projetos</span>
+            </a>
+            
+            <a href="#search" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="9" cy="9" r="6"/>
+                    <path d="M14 14l4 4"/>
+                </svg>
+                <span>Buscar Editores</span>
+            </a>
+            
+            <a href="#messages" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 106 8v7l3-2h5a6 6 0 004-2z"/>
+                </svg>
+                <span>Mensagens</span>
+                <span class="badge">3</span>
+            </a>
+            
+            <a href="#payments" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="5" width="16" height="10" rx="2"/>
+                    <path d="M2 9h16"/>
+                </svg>
+                <span>Pagamentos</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
+                <div class="user-info">
+                    <span class="user-name" id="userName">Cliente</span>
+                    <span class="user-role">Cliente</span>
+                </div>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 17H3V3h6M13 13l4-4-4-4M7 10h10"/>
+                </svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <h2 class="page-title">Dashboard</h2>
+            
+            <div class="top-bar-actions">
+                <button class="btn-icon" id="notificationsBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 6a5 5 0 10-10 0c0 7-3 9-3 9h16s-3-2-3-9M11 15a2 2 0 11-4 0"/>
+                    </svg>
+                    <span class="notification-dot"></span>
+                </button>
+                
+                <button class="btn-primary" id="newProjectBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 5v10M5 10h10"/>
+                    </svg>
+                    <span>Novo Projeto</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content" id="dashboardView">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="5" width="18" height="14" rx="2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Projetos Ativos</span>
+                        <span class="stat-value" id="activeProjects">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <path d="M22 4L12 14.01l-3-3"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Concluídos</span>
+                        <span class="stat-value" id="completedProjects">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Investido</span>
+                        <span class="stat-value" id="totalSpent">R$ 0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/>
+                            <circle cx="12" cy="7" r="4"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Editores</span>
+                        <span class="stat-value" id="editorsWorked">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recent Projects -->
+            <section class="content-section">
+                <div class="section-header">
+                    <h3>Projetos Recentes</h3>
+                    <a href="#projects" class="link-view-all">Ver todos →</a>
+                </div>
+                
+                <div class="projects-list" id="recentProjects">
+                    <!-- Projects will be loaded dynamically -->
+                    <div class="empty-state">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="8" y="12" width="48" height="40" rx="4"/>
+                            <path d="M8 24h48"/>
+                            <circle cx="32" cy="36" r="8"/>
+                        </svg>
+                        <p>Nenhum projeto ainda</p>
+                        <button class="btn-primary" onclick="document.getElementById('newProjectBtn').click()">
+                            Criar Primeiro Projeto
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recommended Editors -->
+            <section class="content-section">
+                <div class="section-header">
+                    <h3>Editores Recomendados</h3>
+                    <a href="#search" class="link-view-all">Explorar →</a>
+                </div>
+                
+                <div class="editors-grid" id="recommendedEditors">
+                    <!-- Editors will be loaded dynamically -->
+                </div>
+            </section>
+        </div>
+
+        <!-- Projects View -->
+        <div class="dashboard-content hidden" id="projectsView">
+            <div class="projects-filters">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" data-status="all">Todos</button>
+                    <button class="filter-tab" data-status="OPEN">Abertos</button>
+                    <button class="filter-tab" data-status="IN_PROGRESS">Em Andamento</button>
+                    <button class="filter-tab" data-status="IN_REVIEW">Em Revisão</button>
+                    <button class="filter-tab" data-status="COMPLETED">Concluídos</button>
+                </div>
+                
+                <div class="filter-search">
+                    <input type="text" placeholder="Buscar projetos..." id="projectSearch">
+                </div>
+            </div>
+            
+            <div class="projects-kanban" id="projectsKanban">
+                <!-- Kanban columns will be generated -->
+            </div>
+        </div>
+    </main>
+
+    <!-- New Project Modal -->
+    <div class="modal-overlay" id="newProjectModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Criar Novo Projeto</h2>
+                <button class="btn-close" id="closeModal">&times;</button>
+            </div>
+            
+            <!-- Project Creation Wizard -->
+            <div class="wizard-container">
+                <div class="wizard-steps">
+                    <div class="wizard-step active" data-step="1">
+                        <span class="step-number">1</span>
+                        <span class="step-label">Tipo</span>
+                    </div>
+                    <div class="wizard-step" data-step="2">
+                        <span class="step-number">2</span>
+                        <span class="step-label">Detalhes</span>
+                    </div>
+                    <div class="wizard-step" data-step="3">
+                        <span class="step-number">3</span>
+                        <span class="step-label">Orçamento</span>
+                    </div>
+                    <div class="wizard-step" data-step="4">
+                        <span class="step-number">4</span>
+                        <span class="step-label">Referências</span>
+                    </div>
+                </div>
+
+                <form id="newProjectForm">
+                    <!-- Step 1: Project Type -->
+                    <div class="wizard-content active" data-step="1">
+                        <h3>Que tipo de vídeo você precisa?</h3>
+                        
+                        <div class="video-types-grid">
+                            <label class="video-type-card">
+                                <input type="radio" name="specialty" value="VLOG" required>
+                                <div class="type-content">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="8" width="8" height="16" rx="1"/>
+                                        <path d="M12 8v16"/>
+                                    </svg>
+                                    <span class="type-name">Vlog</span>
+                                    <span class="type-desc">Conteúdo casual e dinâmico</span>
+                                </div>
+                            </label>
+
+                            <label class="video-type-card">
+                                <input type="radio" name="specialty" value="COMMERCIAL">
+                                <div class="type-content">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="6" width="24" height="20" rx="2"/>
+                                        <path d="M14 16l6-4v8z"/>
+                                    </svg>
+                                    <span class="type-name">Comercial</span>
+                                    <span class="type-desc">Anúncios e publicidade</span>
+                                </div>
+                            </label>
+
+                            <label class="video-type-card">
+                                <input type="radio" name="specialty" value="REELS_TIKTOK">
+                                <div class="type-content">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="10" y="4" width="12" height="24" rx="2"/>
+                                    </svg>
+                                    <span class="type-name">Reels/TikTok</span>
+                                    <span class="type-desc">Vídeos verticais curtos</span>
+                                </div>
+                            </label>
+
+                            <label class="video-type-card">
+                                <input type="radio" name="specialty" value="YOUTUBE">
+                                <div class="type-content">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="2" y="8" width="28" height="16" rx="2"/>
+                                        <path d="M13 12l8 4-8 4z"/>
+                                    </svg>
+                                    <span class="type-name">YouTube</span>
+                                    <span class="type-desc">Conteúdo longo formato</span>
+                                </div>
+                            </label>
+
+                            <label class="video-type-card">
+                                <input type="radio" name="specialty" value="DOCUMENTARY">
+                                <div class="type-content">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M26 4H6a2 2 0 00-2 2v20a2 2 0 002 2h20a2 2 0 002-2V6a2 2 0 00-2-2z"/>
+                                        <path d="M4 10h24"/>
+                                    </svg>
+                                    <span class="type-name">Documentário</span>
+                                    <span class="type-desc">Narrativa profissional</span>
+                                </div>
+                            </label>
+
+                            <label class="video-type-card">
+                                <input type="radio" name="specialty" value="GAMEPLAY">
+                                <div class="type-content">
+                                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                                        <rect x="4" y="10" width="24" height="12" rx="2"/>
+                                        <circle cx="12" cy="16" r="2"/>
+                                        <path d="M20 14v4M18 16h4"/>
+                                    </svg>
+                                    <span class="type-name">Gameplay</span>
+                                    <span class="type-desc">Gaming e streaming</span>
+                                </div>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Project Details -->
+                    <div class="wizard-content" data-step="2">
+                        <h3>Detalhes do Projeto</h3>
+                        
+                        <div class="form-group">
+                            <label>Título do Projeto</label>
+                            <input type="text" name="title" placeholder="Ex: Vídeo de lançamento do meu produto" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Descrição</label>
+                            <textarea name="description" rows="5" placeholder="Descreva o que você precisa..." required></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Duração Desejada (minutos)</label>
+                                <input type="number" name="duration_min" placeholder="Min" min="1">
+                            </div>
+                            <div class="form-group">
+                                <label>até</label>
+                                <input type="number" name="duration_max" placeholder="Max" min="1">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Prazo de Entrega</label>
+                            <input type="date" name="deadline" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Formato (Aspect Ratio)</label>
+                            <select name="aspect_ratio">
+                                <option value="16:9">16:9 (Horizontal - YouTube, TV)</option>
+                                <option value="9:16">9:16 (Vertical - Reels, TikTok)</option>
+                                <option value="1:1">1:1 (Quadrado - Instagram)</option>
+                                <option value="4:5">4:5 (Instagram Feed)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Budget -->
+                    <div class="wizard-content" data-step="3">
+                        <h3>Qual seu orçamento?</h3>
+                        
+                        <div class="budget-type-selector">
+                            <label class="budget-type-card">
+                                <input type="radio" name="budget_type" value="fixed" checked>
+                                <div class="budget-content">
+                                    <span class="budget-label">Preço Fixo</span>
+                                    <span class="budget-desc">Valor total do projeto</span>
+                                </div>
+                            </label>
+                            <label class="budget-type-card">
+                                <input type="radio" name="budget_type" value="hourly">
+                                <div class="budget-content">
+                                    <span class="budget-label">Por Hora</span>
+                                    <span class="budget-desc">Valor por hora de trabalho</span>
+                                </div>
+                            </label>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Orçamento Mínimo</label>
+                                <div class="input-currency">
+                                    <span>R$</span>
+                                    <input type="number" name="budget_min" placeholder="500" min="0" step="50" required>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>Orçamento Máximo</label>
+                                <div class="input-currency">
+                                    <span>R$</span>
+                                    <input type="number" name="budget_max" placeholder="1500" min="0" step="50" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="budget-suggestions">
+                            <p>Sugestões baseadas no tipo de projeto:</p>
+                            <button type="button" class="budget-suggestion" data-min="300" data-max="800">
+                                R$ 300 - R$ 800 <span>(Básico)</span>
+                            </button>
+                            <button type="button" class="budget-suggestion" data-min="800" data-max="2000">
+                                R$ 800 - R$ 2.000 <span>(Profissional)</span>
+                            </button>
+                            <button type="button" class="budget-suggestion" data-min="2000" data-max="5000">
+                                R$ 2.000 - R$ 5.000 <span>(Premium)</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 4: References -->
+                    <div class="wizard-content" data-step="4">
+                        <h3>Adicionar Referências</h3>
+                        <p class="step-description">Compartilhe exemplos de vídeos que você gosta ou materiais relevantes</p>
+                        
+                        <div class="form-group">
+                            <label>URLs de Referência (YouTube, Vimeo, etc.)</label>
+                            <div id="referenceUrls">
+                                <div class="url-input-group">
+                                    <input type="url" name="reference_url[]" placeholder="https://youtube.com/watch?v=...">
+                                    <button type="button" class="btn-icon btn-add-url">+</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Upload de Arquivos (Fotos, Logos, Documentos)</label>
+                            <div class="file-upload-area" id="fileUploadArea">
+                                <svg width="48" height="48" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M24 32V16m0 0l-8 8m8-8l8 8"/>
+                                    <path d="M40 24v12a4 4 0 01-4 4H12a4 4 0 01-4-4V24"/>
+                                </svg>
+                                <p>Arraste arquivos aqui ou clique para selecionar</p>
+                                <input type="file" id="fileInput" multiple hidden>
+                            </div>
+                            <div id="uploadedFiles" class="uploaded-files-list"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Notas Adicionais</label>
+                            <textarea name="additional_notes" rows="4" placeholder="Alguma informação extra que o editor deve saber?"></textarea>
+                        </div>
+                    </div>
+
+                    <!-- Wizard Navigation -->
+                    <div class="wizard-navigation">
+                        <button type="button" class="btn-secondary" id="prevStepBtn">Voltar</button>
+                        <button type="button" class="btn-primary" id="nextStepBtn">Próximo</button>
+                        <button type="submit" class="btn-primary hidden" id="submitProjectBtn">Publicar Projeto</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/client-dashboard.js"></script>
+</body>
+</html>

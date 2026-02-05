@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sala de Revisão | FRAMES</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link rel="stylesheet" href="/css/video-player.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="review-room">
+        <!-- Header -->
+        <header class="review-header">
+            <button class="btn-back" onclick="history.back()">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M15 10H5M5 10l5 5M5 10l5-5"/>
+                </svg>
+                Voltar
+            </button>
+            
+            <div class="project-info">
+                <h2 id="projectTitle">Carregando...</h2>
+                <span class="version-badge" id="versionBadge">Versão 1</span>
+            </div>
+            
+            <div class="review-actions">
+                <button class="btn-secondary" id="downloadBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 14V4M10 14l-4-4M10 14l4-4"/>
+                        <path d="M2 18h16"/>
+                    </svg>
+                    Download
+                </button>
+                <button class="btn-warning" id="requestRevisionBtn">Solicitar Revisão</button>
+                <button class="btn-success" id="approveBtn">Aprovar e Finalizar</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="review-content">
+            <!-- Video Player Section -->
+            <div class="video-section">
+                <div class="video-container" id="videoContainer">
+                    <video id="mainVideo" class="video-player" controls></video>
+                    
+                    <!-- Comment Markers Overlay -->
+                    <div class="comment-markers" id="commentMarkers"></div>
+                    
+                    <!-- Click to Comment Indicator -->
+                    <div class="click-indicator" id="clickIndicator">
+                        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="16" cy="16" r="14"/>
+                            <path d="M16 10v12M10 16h12"/>
+                        </svg>
+                        <span>Clique no vídeo para adicionar comentário</span>
+                    </div>
+                </div>
+
+                <!-- Timeline with Comments -->
+                <div class="video-timeline" id="videoTimeline">
+                    <div class="timeline-progress" id="timelineProgress"></div>
+                    <div class="timeline-comments" id="timelineComments"></div>
+                </div>
+
+                <!-- Playback Controls -->
+                <div class="video-controls">
+                    <button class="control-btn" id="playPauseBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M8 5v14l11-7z" id="playIcon"/>
+                            <g id="pauseIcon" style="display:none">
+                                <rect x="6" y="4" width="4" height="16"/>
+                                <rect x="14" y="4" width="4" height="16"/>
+                            </g>
+                        </svg>
+                    </button>
+                    
+                    <span class="time-display">
+                        <span id="currentTime">0:00</span> / <span id="duration">0:00</span>
+                    </span>
+                    
+                    <div class="volume-control">
+                        <button class="control-btn" id="volumeBtn">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M3 9v6h4l5 5V4L7 9H3z"/>
+                                <path d="M15.54 8.46a5 5 0 010 7.07M18.36 5.64a9 9 0 010 12.73"/>
+                            </svg>
+                        </button>
+                        <input type="range" class="volume-slider" id="volumeSlider" min="0" max="100" value="100">
+                    </div>
+                    
+                    <button class="control-btn" id="speedBtn" title="Velocidade">1x</button>
+                    
+                    <button class="control-btn ml-auto" id="fullscreenBtn">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M8 3H5a2 2 0 00-2 2v3M21 8V5a2 2 0 00-2-2h-3M3 16v3a2 2 0 002 2h3M16 21h3a2 2 0 002-2v-3"/>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- Version Comparison -->
+                <div class="version-comparison" id="versionComparison">
+                    <h3>Comparar Versões</h3>
+                    <div class="version-selector">
+                        <select id="compareVersionSelect">
+                            <option value="">Selecione uma versão...</option>
+                        </select>
+                        <button class="btn-secondary" id="compareBtn">Comparar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Comments Panel -->
+            <aside class="comments-panel">
+                <div class="panel-header">
+                    <h3>Comentários</h3>
+                    <div class="comments-filter">
+                        <button class="filter-btn active" data-filter="all">Todos <span id="totalComments">0</span></button>
+                        <button class="filter-btn" data-filter="unresolved">Abertos <span id="unresolvedComments">0</span></button>
+                        <button class="filter-btn" data-filter="resolved">Resolvidos <span id="resolvedComments">0</span></button>
+                    </div>
+                </div>
+
+                <div class="comments-list" id="commentsList">
+                    <!-- Comments will be loaded here -->
+                    <div class="empty-comments">
+                        <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M56 32A24 24 0 118 32v14l10-6h14a24 24 0 0024-8z"/>
+                        </svg>
+                        <p>Nenhum comentário ainda</p>
+                        <p class="hint">Clique no vídeo para adicionar um comentário em qualquer momento</p>
+                    </div>
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Add Comment Modal -->
+    <div class="modal-overlay" id="commentModal">
+        <div class="modal-container modal-small">
+            <div class="modal-header">
+                <h3>Adicionar Comentário</h3>
+                <span class="timestamp-badge" id="modalTimestamp">0:00</span>
+                <button class="btn-close" id="closeCommentModal">&times;</button>
+            </div>
+            
+            <form id="commentForm">
+                <div class="form-group">
+                    <label>Seu comentário</label>
+                    <textarea id="commentText" rows="4" placeholder="Descreva o que precisa ser alterado..." required></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label>Prioridade</label>
+                    <div class="priority-selector">
+                        <label class="priority-option">
+                            <input type="radio" name="priority" value="low" checked>
+                            <span class="priority-badge low">Baixa</span>
+                        </label>
+                        <label class="priority-option">
+                            <input type="radio" name="priority" value="normal">
+                            <span class="priority-badge normal">Normal</span>
+                        </label>
+                        <label class="priority-option">
+                            <input type="radio" name="priority" value="high">
+                            <span class="priority-badge high">Alta</span>
+                        </label>
+                        <label class="priority-option">
+                            <input type="radio" name="priority" value="critical">
+                            <span class="priority-badge critical">Crítica</span>
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button type="button" class="btn-secondary" onclick="document.getElementById('commentModal').classList.remove('active')">Cancelar</button>
+                    <button type="submit" class="btn-primary">Adicionar Comentário</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Approval Confirmation Modal -->
+    <div class="modal-overlay" id="approvalModal">
+        <div class="modal-container modal-small">
+            <div class="modal-header">
+                <h3>Aprovar Vídeo</h3>
+                <button class="btn-close" onclick="document.getElementById('approvalModal').classList.remove('active')">&times;</button>
+            </div>
+            
+            <div class="approval-content">
+                <p>Você está prestes a aprovar este vídeo e finalizar o projeto.</p>
+                <p><strong>Esta ação irá:</strong></p>
+                <ul>
+                    <li>Liberar o pagamento para o editor</li>
+                    <li>Marcar o projeto como concluído</li>
+                    <li>Permitir o download dos arquivos finais</li>
+                </ul>
+                
+                <div class="form-group">
+                    <label>Deixe uma avaliação (opcional)</label>
+                    <div class="star-rating" id="starRating">
+                        <span class="star" data-rating="1">☆</span>
+                        <span class="star" data-rating="2">☆</span>
+                        <span class="star" data-rating="3">☆</span>
+                        <span class="star" data-rating="4">☆</span>
+                        <span class="star" data-rating="5">☆</span>
+                    </div>
+                    <textarea id="reviewText" rows="3" placeholder="Comente sobre a experiência..."></textarea>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn-secondary" onclick="document.getElementById('approvalModal').classList.remove('active')">Cancelar</button>
+                    <button class="btn-success" id="confirmApproveBtn">Confirmar Aprovação</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/video-player.js"></script>
+</body>
+</html>
