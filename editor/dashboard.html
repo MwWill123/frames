@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Editor | FRAMES</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">FRAMES</h1>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="#dashboard" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="3" y="11" width="7" height="6"/>
+                    <rect x="11" y="3" width="6" height="13"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            
+            <a href="#projects" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="4" width="16" height="12" rx="2"/>
+                    <path d="M2 8h16"/>
+                </svg>
+                <span>Projetos</span>
+            </a>
+            
+            <a href="#portfolio" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="14" height="14" rx="2"/>
+                    <path d="M3 9h14M9 3v14"/>
+                </svg>
+                <span>Portfólio</span>
+            </a>
+            
+            <a href="#earnings" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2v16M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                </svg>
+                <span>Ganhos</span>
+            </a>
+            
+            <a href="#messages" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M18 8A6 6 0 106 8v7l3-2h5a6 6 0 004-2z"/>
+                </svg>
+                <span>Mensagens</span>
+                <span class="badge">2</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
+                <div class="user-info">
+                    <span class="user-name" id="userName">Editor</span>
+                    <span class="user-role">Editor</span>
+                </div>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 17H3V3h6M13 13l4-4-4-4M7 10h10"/>
+                </svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <!-- Top Bar -->
+        <header class="top-bar">
+            <h2 class="page-title">Dashboard</h2>
+            
+            <div class="top-bar-actions">
+                <button class="btn-icon" id="notificationsBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M15 6a5 5 0 10-10 0c0 7-3 9-3 9h16s-3-2-3-9M11 15a2 2 0 11-4 0"/>
+                    </svg>
+                    <span class="notification-dot"></span>
+                </button>
+                
+                <button class="btn-primary" id="uploadVideoBtn">
+                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M10 14V4M10 4l-4 4M10 4l4 4"/>
+                        <path d="M2 18h16"/>
+                    </svg>
+                    <span>Upload Vídeo</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Dashboard Content -->
+        <div class="dashboard-content" id="dashboardView">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon blue">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="5" width="18" height="14" rx="2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Projetos Ativos</span>
+                        <span class="stat-value" id="activeProjects">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon green">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M22 11.08V12a10 10 0 11-5.93-9.14"/>
+                            <path d="M22 4L12 14.01l-3-3"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Concluídos</span>
+                        <span class="stat-value" id="completedProjects">0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon purple">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2v20M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Ganhos Este Mês</span>
+                        <span class="stat-value" id="monthlyEarnings">R$ 0</span>
+                    </div>
+                </div>
+
+                <div class="stat-card">
+                    <div class="stat-icon orange">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+                        </svg>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-label">Avaliação</span>
+                        <span class="stat-value" id="averageRating">0.0</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Projects Kanban -->
+            <section class="content-section">
+                <div class="section-header">
+                    <h3>Projetos em Andamento</h3>
+                </div>
+                
+                <div class="kanban-board" id="kanbanBoard">
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            <h4>Novas Solicitações</h4>
+                            <span class="count">0</span>
+                        </div>
+                        <div class="kanban-cards" id="newRequests">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            <h4>Em Edição</h4>
+                            <span class="count">0</span>
+                        </div>
+                        <div class="kanban-cards" id="editing">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            <h4>Em Revisão</h4>
+                            <span class="count">0</span>
+                        </div>
+                        <div class="kanban-cards" id="review">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+
+                    <div class="kanban-column">
+                        <div class="kanban-header">
+                            <h4>Concluídos</h4>
+                            <span class="count">0</span>
+                        </div>
+                        <div class="kanban-cards" id="completed">
+                            <!-- Loaded dynamically -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Recent Activity -->
+            <section class="content-section">
+                <div class="section-header">
+                    <h3>Atividade Recente</h3>
+                </div>
+                
+                <div class="activity-list" id="activityList">
+                    <!-- Loaded dynamically -->
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Upload Video Modal -->
+    <div class="modal-overlay" id="uploadModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Upload de Vídeo</h2>
+                <button class="btn-close" id="closeUploadModal">&times;</button>
+            </div>
+            
+            <div class="upload-content">
+                <div class="upload-area" id="uploadArea">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M32 48V16m0 0l-12 12m12-12l12 12"/>
+                        <path d="M8 56h48"/>
+                    </svg>
+                    <p>Arraste o vídeo aqui ou clique para selecionar</p>
+                    <input type="file" id="videoInput" accept="video/*" hidden>
+                    <p class="upload-hint">MP4, MOV, AVI até 10GB</p>
+                </div>
+                
+                <div class="upload-progress hidden" id="uploadProgress">
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p class="progress-text" id="progressText">Uploading... 0%</p>
+                </div>
+                
+                <div class="upload-form" id="uploadForm">
+                    <div class="form-group">
+                        <label>Projeto</label>
+                        <select id="projectSelect" required>
+                            <option value="">Selecione o projeto</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Tipo de Arquivo</label>
+                        <select id="fileTypeSelect">
+                            <option value="DRAFT_VERSION">Versão Draft</option>
+                            <option value="FINAL_DELIVERY">Entrega Final</option>
+                            <option value="REVISION">Revisão</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Notas (opcional)</label>
+                        <textarea id="uploadNotes" rows="3" placeholder="Adicione informações sobre esta versão..."></textarea>
+                    </div>
+                    
+                    <button class="btn-primary" id="startUploadBtn">Iniciar Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/editor-dashboard.js"></script>
+</body>
+</html>
