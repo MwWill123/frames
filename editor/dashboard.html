@@ -15,7 +15,7 @@
         </div>
         
         <nav class="sidebar-nav">
-            <a href="#dashboard" class="nav-item active">
+            <a href="/editor/dashboard.html" class="nav-item active">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
                     <rect x="3" y="3" width="7" height="7"/>
                     <rect x="3" y="11" width="7" height="6"/>
@@ -26,10 +26,19 @@
             
             <a href="/editor/explore-projects.html" class="nav-item">
                 <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                    <rect x="2" y="4" width="16" height="12" rx="2"/>
-                    <path d="M2 8h16"/>
+                    <circle cx="10" cy="10" r="8"/>
+                    <path d="M14 14l4 4"/>
                 </svg>
-                <span>Projetos</span>
+                <span>Explorar Projetos</span>
+            </a>
+            
+            <a href="/editor/my-proposals.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4H4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2z"/>
+                    <path d="M2 8l8 5 8-5"/>
+                </svg>
+                <span>Minhas Propostas</span>
+                <span class="badge" id="proposalsCountBadge">0</span>
             </a>
             
             <a href="#portfolio" class="nav-item">
@@ -45,14 +54,6 @@
                     <path d="M12 2v16M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
                 </svg>
                 <span>Ganhos</span>
-            </a>
-            
-            <a href="#messages" class="nav-item">
-                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                    <path d="M18 8A6 6 0 106 8v7l3-2h5a6 6 0 004-2z"/>
-                </svg>
-                <span>Mensagens</span>
-                <span class="badge">2</span>
             </a>
         </nav>
         
@@ -83,16 +84,16 @@
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
                         <path d="M15 6a5 5 0 10-10 0c0 7-3 9-3 9h16s-3-2-3-9M11 15a2 2 0 11-4 0"/>
                     </svg>
-                    <span class="notification-dot"></span>
+                    <span class="notification-dot" id="notificationDot" style="display: none;"></span>
                 </button>
                 
-                <button class="btn-primary" id="uploadVideoBtn">
+                <a href="/editor/explore-projects.html" class="btn-primary" style="text-decoration: none; display: flex; align-items: center; gap: 0.5rem;">
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
-                        <path d="M10 14V4M10 4l-4 4M10 4l4 4"/>
-                        <path d="M2 18h16"/>
+                        <circle cx="10" cy="10" r="8"/>
+                        <path d="M14 14l4 4"/>
                     </svg>
-                    <span>Upload Vídeo</span>
-                </button>
+                    <span>Explorar Projetos</span>
+                </a>
             </div>
         </header>
 
@@ -153,20 +154,10 @@
             <!-- Projects Kanban -->
             <section class="content-section">
                 <div class="section-header">
-                    <h3>Projetos em Andamento</h3>
+                    <h3>Meus Projetos</h3>
                 </div>
                 
                 <div class="kanban-board" id="kanbanBoard">
-                    <div class="kanban-column">
-                        <div class="kanban-header">
-                            <h4>Novas Solicitações</h4>
-                            <span class="count">0</span>
-                        </div>
-                        <div class="kanban-cards" id="newRequests">
-                            <!-- Loaded dynamically -->
-                        </div>
-                    </div>
-
                     <div class="kanban-column">
                         <div class="kanban-header">
                             <h4>Em Edição</h4>
@@ -220,47 +211,40 @@
                 <button class="btn-close" id="closeUploadModal">&times;</button>
             </div>
             
-            <div class="upload-content">
-                <div class="upload-area" id="uploadArea">
-                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2">
+            <div class="upload-content" style="padding: 2rem;">
+                <div class="upload-area" id="uploadArea" style="border: 2px dashed rgba(0,255,240,0.3); border-radius: 12px; padding: 3rem; text-align: center; cursor: pointer; transition: all 0.3s;">
+                    <svg width="64" height="64" viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2" style="margin: 0 auto 1rem;">
                         <path d="M32 48V16m0 0l-12 12m12-12l12 12"/>
                         <path d="M8 56h48"/>
                     </svg>
-                    <p>Arraste o vídeo aqui ou clique para selecionar</p>
+                    <p style="margin: 0.5rem 0;">Arraste o vídeo aqui ou clique para selecionar</p>
                     <input type="file" id="videoInput" accept="video/*" hidden>
-                    <p class="upload-hint">MP4, MOV, AVI até 10GB</p>
+                    <p class="upload-hint" style="color: var(--text-secondary); font-size: 0.9rem;">MP4, MOV, AVI até 10GB</p>
                 </div>
                 
-                <div class="upload-progress hidden" id="uploadProgress">
-                    <div class="progress-bar">
-                        <div class="progress-fill" id="progressFill"></div>
-                    </div>
-                    <p class="progress-text" id="progressText">Uploading... 0%</p>
-                </div>
-                
-                <div class="upload-form" id="uploadForm">
-                    <div class="form-group">
-                        <label>Projeto</label>
-                        <select id="projectSelect" required>
+                <div class="upload-form" id="uploadForm" style="margin-top: 2rem;">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">Projeto</label>
+                        <select id="projectSelect" required style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary);">
                             <option value="">Selecione o projeto</option>
                         </select>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Tipo de Arquivo</label>
-                        <select id="fileTypeSelect">
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">Tipo de Arquivo</label>
+                        <select id="fileTypeSelect" style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary);">
                             <option value="DRAFT_VERSION">Versão Draft</option>
                             <option value="FINAL_DELIVERY">Entrega Final</option>
                             <option value="REVISION">Revisão</option>
                         </select>
                     </div>
                     
-                    <div class="form-group">
-                        <label>Notas (opcional)</label>
-                        <textarea id="uploadNotes" rows="3" placeholder="Adicione informações sobre esta versão..."></textarea>
+                    <div class="form-group" style="margin-bottom: 1.5rem;">
+                        <label style="display: block; margin-bottom: 0.5rem;">Notas (opcional)</label>
+                        <textarea id="uploadNotes" rows="3" placeholder="Adicione informações sobre esta versão..." style="width: 100%; padding: 0.8rem; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: var(--text-primary); resize: vertical;"></textarea>
                     </div>
                     
-                    <button class="btn-primary" id="startUploadBtn">Iniciar Upload</button>
+                    <button class="btn-primary" id="startUploadBtn" style="width: 100%; padding: 1rem;">Iniciar Upload</button>
                 </div>
             </div>
         </div>
