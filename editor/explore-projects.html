@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Explorar Projetos | FRAMES</title>
+    <link rel="stylesheet" href="/css/dashboard.css">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        .projects-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 2rem;
+            padding: 2rem 0;
+        }
+
+        .project-card {
+            background: var(--dark-card);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 16px;
+            padding: 2rem;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .project-card:hover {
+            border-color: var(--primary-cyan);
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 255, 240, 0.2);
+        }
+
+        .project-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 1rem;
+        }
+
+        .project-specialty {
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-purple));
+            color: white;
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+        }
+
+        .project-posted {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+        }
+
+        .project-card h3 {
+            margin: 0 0 1rem 0;
+            font-size: 1.3rem;
+        }
+
+        .project-description {
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .budget-range {
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .proposals-count {
+            background: rgba(255, 165, 0, 0.1);
+            color: var(--warning);
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+        }
+
+        .project-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .tag {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.3rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.75rem;
+        }
+
+        .btn-submit-proposal {
+            width: 100%;
+            padding: 0.9rem;
+            background: linear-gradient(135deg, var(--primary-cyan), var(--primary-purple));
+            border: none;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-submit-proposal:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(0, 255, 240, 0.3);
+        }
+
+        .filters-bar {
+            background: var(--dark-card);
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-select {
+            flex: 1;
+            min-width: 200px;
+            padding: 0.8rem;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            color: var(--text-primary);
+        }
+
+        .empty-projects {
+            text-align: center;
+            padding: 4rem 2rem;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <!-- Sidebar -->
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-header">
+            <h1 class="logo">FRAMES</h1>
+        </div>
+        
+        <nav class="sidebar-nav">
+            <a href="/editor/dashboard.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"/>
+                    <rect x="3" y="11" width="7" height="6"/>
+                    <rect x="11" y="3" width="6" height="13"/>
+                </svg>
+                <span>Dashboard</span>
+            </a>
+            
+            <a href="/editor/explore-projects.html" class="nav-item active">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="10" cy="10" r="8"/>
+                    <path d="M14 14l4 4"/>
+                </svg>
+                <span>Explorar Projetos</span>
+            </a>
+            
+            <a href="/editor/my-proposals.html" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4H4a2 2 0 00-2 2v8a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2z"/>
+                    <path d="M2 8l8 5 8-5"/>
+                </svg>
+                <span>Minhas Propostas</span>
+                <span class="badge" id="proposalsCount">0</span>
+            </a>
+            
+            <a href="/editor/dashboard.html#portfolio" class="nav-item">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="14" height="14" rx="2"/>
+                    <path d="M3 9h14M9 3v14"/>
+                </svg>
+                <span>Portfólio</span>
+            </a>
+        </nav>
+        
+        <div class="sidebar-footer">
+            <div class="user-profile">
+                <img src="https://via.placeholder.com/40" alt="User" class="user-avatar">
+                <div class="user-info">
+                    <span class="user-name" id="userName">Editor</span>
+                    <span class="user-role">Editor</span>
+                </div>
+            </div>
+            <button class="btn-logout" id="logoutBtn">
+                <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M9 17H3V3h6M13 13l4-4-4-4M7 10h10"/>
+                </svg>
+            </button>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <header class="top-bar">
+            <h2 class="page-title">Explorar Projetos</h2>
+            <div class="top-bar-actions">
+                <span id="projectsCount" style="color: var(--text-secondary);">0 projetos disponíveis</span>
+            </div>
+        </header>
+
+        <div class="dashboard-content">
+            <!-- Filters -->
+            <div class="filters-bar">
+                <select class="filter-select" id="specialtyFilter">
+                    <option value="">Todas as Especialidades</option>
+                    <option value="VLOG">Vlog</option>
+                    <option value="COMMERCIAL">Comercial</option>
+                    <option value="REELS_TIKTOK">Reels/TikTok</option>
+                    <option value="YOUTUBE">YouTube</option>
+                    <option value="DOCUMENTARY">Documentário</option>
+                    <option value="GAMEPLAY">Gameplay</option>
+                </select>
+
+                <select class="filter-select" id="budgetFilter">
+                    <option value="">Qualquer Budget</option>
+                    <option value="0-500">Até R$ 500</option>
+                    <option value="500-1000">R$ 500 - R$ 1.000</option>
+                    <option value="1000-2000">R$ 1.000 - R$ 2.000</option>
+                    <option value="2000-5000">R$ 2.000 - R$ 5.000</option>
+                    <option value="5000+">Acima de R$ 5.000</option>
+                </select>
+
+                <select class="filter-select" id="sortFilter">
+                    <option value="recent">Mais Recentes</option>
+                    <option value="budget_high">Maior Budget</option>
+                    <option value="deadline">Deadline Próximo</option>
+                </select>
+            </div>
+
+            <!-- Projects Grid -->
+            <div class="projects-grid" id="projectsGrid">
+                <!-- Loaded dynamically -->
+            </div>
+        </div>
+    </main>
+
+    <!-- Submit Proposal Modal -->
+    <div class="modal-overlay" id="proposalModal">
+        <div class="modal-container">
+            <div class="modal-header">
+                <h2>Enviar Proposta</h2>
+                <button class="btn-close" onclick="closeProposalModal()">&times;</button>
+            </div>
+            
+            <form id="proposalForm">
+                <div style="padding: 2rem;">
+                    <div class="form-group">
+                        <label>Seu Preço</label>
+                        <div class="input-currency">
+                            <span>R$</span>
+                            <input type="number" id="proposedPrice" name="proposed_price" placeholder="500.00" step="0.01" required>
+                        </div>
+                        <p style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 0.5rem;">
+                            Você receberá 85% (R$ <span id="editorAmount">0.00</span>) - 15% taxa da plataforma
+                        </p>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Prazo de Entrega</label>
+                        <select id="deliveryDays" name="delivery_days" required>
+                            <option value="">Selecione...</option>
+                            <option value="1">1 dia</option>
+                            <option value="2">2 dias</option>
+                            <option value="3">3 dias</option>
+                            <option value="5">5 dias</option>
+                            <option value="7">7 dias</option>
+                            <option value="14">14 dias</option>
+                            <option value="30">30 dias</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Mensagem Personalizada</label>
+                        <textarea id="coverLetter" name="cover_letter" rows="5" placeholder="Apresente-se ao cliente e explique por que você é a melhor escolha para este projeto..." required></textarea>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button type="button" class="btn-secondary" onclick="closeProposalModal()">Cancelar</button>
+                        <button type="submit" class="btn-primary">Enviar Proposta</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/js/explore-projects.js"></script>
+</body>
+</html>
